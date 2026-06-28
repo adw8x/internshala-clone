@@ -15,12 +15,17 @@ app.get("/", (req, res) => {
   res.send("hello this is internshala backend");
 });
 app.use("/api", router);
-connect();
+
+connect().catch(() => {
+  console.log("Continuing without a database connection");
+});
+
 app.use((req, res, next) => {
   req.header("Access-Control-Allow-Origin", "*");
   res.header("Access-Control-Allow-Origin", "*");
   next();
 });
+
 app.listen(port, () => {
   console.log(`Server is running on the port ${port}`);
 });
