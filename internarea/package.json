@@ -9,6 +9,7 @@
     "lint": "next lint"
   },
   "dependencies": {
+    "@dataconnect/generated": "file:src/dataconnect-generated",
     "@reduxjs/toolkit": "^2.6.1",
     "axios": "^1.8.1",
     "firebase": "^11.4.0",

@@ -263,7 +263,7 @@ export default function SvgSlider() {
           ))}
         </div>
       </div>
-      {/* INternship grid   */}
+      {/* INternship grid _  */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-16">
         {filteredInternships.map((internship: any, index: any) => (
           <div
