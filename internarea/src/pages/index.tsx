@@ -12,7 +12,7 @@ import {
   MapPin,
 } from "lucide-react";
 import Link from "next/link";
-import axios from "axios";
+import api from "@/lib/api";
 
 export default function SvgSlider() {
   const categories = [
@@ -119,8 +119,8 @@ export default function SvgSlider() {
     const fetchdata = async () => {
       try {
         const [internshipres, jobres] = await Promise.all([
-          axios.get("https://internshala-clone-y2p2.onrender.com/api/internship"),
-          axios.get("https://internshala-clone-y2p2.onrender.com/api/job"),
+          api.get("/internship"),
+          api.get("/job"),
         ]);
         setinternship(internshipres.data);
         setjob(jobres.data);

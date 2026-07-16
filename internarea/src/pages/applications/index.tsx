@@ -1,4 +1,3 @@
-import axios from "axios";
 import {
   Building2,
   Calendar,
@@ -11,6 +10,7 @@ import {
 import Link from "next/link";
 import React, { useEffect, useState } from "react";
 import { toast } from "react-toastify";
+import api from "@/lib/api";
 // const Applications = [
 //   {
 //     _id: "1",
@@ -54,7 +54,7 @@ const index = () => {
   useEffect(() => {
     const fetchdata = async () => {
       try {
-        const res = await axios.get("https://internshala-clone-y2p2.onrender.com/api/application");
+        const res = await api.get("/application");
         setdata(res.data);
       } catch (error) {
         console.log(error);
@@ -73,8 +73,8 @@ const index = () => {
   });
   const handleacceptandreject = async (id: any, action: any) => {
     try {
-      const res = await axios.put(
-        `https://internshala-clone-y2p2.onrender.com/api/application/${id}`,
+      const res = await api.put(
+        `/application/${id}`,
         { action }
       );
       const updateappliacrtion = data.map((app: any) =>

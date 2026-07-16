@@ -1,7 +1,7 @@
-import axios from "axios";
 import { User, Lock } from "lucide-react";
 import { useRouter } from "next/navigation";
 import React, { useState } from "react";
+import api from "@/lib/api";
 import { toast } from "react-toastify";
 
 const index = () => {
@@ -26,8 +26,8 @@ const index = () => {
     }
     try {
       setisloading(true);
-      const res = await axios.post(
-        "https://internshala-clone-y2p2.onrender.com/api/admin/adminlogin",
+      const res = await api.post(
+        "/admin/adminlogin",
         formadata
       );
       toast.success("logged in successfuly");

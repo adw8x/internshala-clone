@@ -1,4 +1,3 @@
-import axios from "axios";
 import {
   ArrowUpRight,
   Calendar,
@@ -11,7 +10,7 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 import React, { useEffect, useState } from "react";
-
+import api from "@/lib/api";
 const index = () => {
   // const filteredJobs = [
   //   {
@@ -127,7 +126,7 @@ const index = () => {
   useEffect(()=>{
     const fetchdata=async()=>{
       try {
-        const res=await axios.get( "https://internshala-clone-y2p2.onrender.com/api/job")     
+        const res=await api.get( "/job")     
         setjob(res.data)
         setfilteredjobs(res.data)
       } catch (error) {

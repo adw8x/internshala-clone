@@ -1,5 +1,5 @@
 import { selectuser } from "@/Feature/Userslice";
-import axios from "axios";
+import api from "@/lib/api";
 import {
   ArrowUpRight,
   Calendar,
@@ -78,7 +78,7 @@ const index = () => {
   useEffect(()=>{
     const fetchdata=async()=>{
       try {
-        const res=await axios.get( `https://internshala-clone-y2p2.onrender.com/api/internship/${id}`)     
+        const res=await api.get( `/internship/${id}`)     
         setinternship(res.data)
       } catch (error) {
         console.log(error)
@@ -115,7 +115,7 @@ const index = () => {
         Application:id,
         availability
       }
-      await axios.post("https://internshala-clone-y2p2.onrender.com/api/application",applicationdata)
+      await api.post("/application",applicationdata)
       toast.success("Application submit successfully")
       router.push('/internship')
     } catch (error) {

@@ -1,4 +1,3 @@
-import axios from "axios";
 import {
   ArrowUpRight,
   Calendar,
@@ -12,6 +11,8 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 import React, { useEffect, useState } from "react";
+import api from "@/lib/api";
+
 // const internshipData = [
 //   {
 //     _id: "1",
@@ -58,7 +59,7 @@ const index = () => {
   useEffect(()=>{
     const fetchdata=async()=>{
       try {
-        const res=await axios.get( "https://internshala-clone-y2p2.onrender.com/api/internship")     
+        const res=await api.get( "/internship")     
         setinternship(res.data)
         setfilteredInternships(res.data)
       } catch (error) {

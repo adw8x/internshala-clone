@@ -12,7 +12,7 @@ import {
   MapPin,
   X,
 } from "lucide-react";
-import axios from "axios";
+import api from "@/lib/api";
 import { toast } from "react-toastify";
 import { useSelector } from "react-redux";
 import { selectuser } from "@/Feature/Userslice";
@@ -124,7 +124,7 @@ const index = () => {
   useEffect(() => {
     const fetchdata = async () => {
       try {
-        const res = await axios.get(`https://internshala-clone-y2p2.onrender.com/api/job/${id}`);
+        const res = await api.get(`/job/${id}`);
         setjob(res.data);
       } catch (error) {
         console.log(error);
@@ -161,8 +161,8 @@ const index = () => {
         Application: id,
         availability,
       };
-      await axios.post(
-        "https://internshala-clone-y2p2.onrender.com/api/application",
+      await api.post(
+        "/application",
         applicationdata
       );
       toast.success("Application submit successfully");
