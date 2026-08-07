@@ -1,15 +1,30 @@
-import axios from "axios";
+import axios from 'axios';
+
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:5000/api';
 
 const api = axios.create({
-  // Single source of truth for the backend base URL.
-  // Override with NEXT_PUBLIC_API_BASE_URL (e.g. on Vercel) when the
-  // backend is hosted elsewhere. Defaults to the Render deployment.
-  baseURL:
-    process.env.NEXT_PUBLIC_API_BASE_URL ||
-    "https://internshala-clone-y2p2.onrender.com/api",
+  baseURL: API_BASE_URL,
   headers: {
-    "Content-Type": "application/json",
+    'Content-Type': 'application/json',
   },
 });
+
+export type AuthUser = {
+  uid?: string;
+  name?: string | null;
+  email?: string | null;
+  photo?: string | null;
+  phoneNumber?: string | null;
+};
+
+export function authHeaders(user: AuthUser | null | undefined) {
+  if (!user || !user.uid) return {};
+  return {
+    'x-user-id': user.uid,
+    'x-user-name': encodeURIComponent(user.name || ''),
+    'x-user-photo': encodeURIComponent(user.photo || ''),
+    'x-user-email': encodeURIComponent(user.email || ''),
+  };
+}
 
 export default api;

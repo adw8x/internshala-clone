@@ -40,6 +40,7 @@ const Applications = [
 ];
 const getStatusColor = (status: any) => {
   switch (status.toLowerCase()) {
+    case "accepted":
     case "approved":
       return "bg-green-100 text-green-800";
     case "rejected":
@@ -76,8 +77,12 @@ const index = () => {
   );
   const filteredapplications = userapplication.filter((application:any) => {
     const searchmatch =
-      application.company.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      application.category.toLowerCase().includes(searchTerm.toLowerCase());
+      (application.company || "")
+        .toLowerCase()
+        .includes(searchTerm.toLowerCase()) ||
+      (application.category || "")
+        .toLowerCase()
+        .includes(searchTerm.toLowerCase());
 
     if (filter === "all") return searchmatch;
     return searchmatch && application.status.toLowerCase() === filter;
@@ -131,9 +136,9 @@ const index = () => {
                   Pending
                 </button>
                 <button
-                  onClick={() => setFilter("approved")}
+                  onClick={() => setFilter("accepted")}
                   className={`px-4 py-2 rounded-lg text-sm font-medium ${
-                    filter === "approved"
+                    filter === "accepted"
                       ? "bg-green-100 text-green-800"
                       : "bg-gray-100 text-gray-800"
                   }`}

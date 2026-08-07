@@ -11,9 +11,11 @@ import {
   Calendar,
 } from "lucide-react";
 import { useRouter } from "next/navigation";
-import api from "@/lib/api";
 import { toast } from "react-toastify";
+import api from "@/lib/api";
+import { useRequireAdmin } from "@/lib/auth";
 const index = () => {
+  const isAdmin = useRequireAdmin();
   const [formData, setFormData] = useState({
     title: "",
     company: "",
@@ -30,6 +32,7 @@ const index = () => {
   });
   const router = useRouter();
   const [isloading, setisloading] = useState(false);
+  if (!isAdmin) return null;
   const handleChange = (e: any) => {
     const { name, value } = e.target;
 

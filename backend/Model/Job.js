@@ -9,6 +9,7 @@ const JobShcema = new mongoose.Schema({
   aboutJob: String,
   whoCanApply: String,
   perks: Array,
+  numberOfOpening: String,
   AdditionalInfo: String,
   CTC: String,
   StartDate: String,

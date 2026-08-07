@@ -12,7 +12,13 @@ import {
   MapPin,
 } from "lucide-react";
 import Link from "next/link";
+import { useRouter } from "next/router";
+import { useDispatch, useSelector } from "react-redux";
+import { toast } from "react-toastify";
 import api from "@/lib/api";
+import { selectuser, login } from "@/Feature/Userslice";
+import { setAdmin } from "@/lib/auth";
+import { signInWithGoogle } from "@/lib/googleLogin";
 
 export default function SvgSlider() {
   const categories = [
@@ -115,6 +121,9 @@ export default function SvgSlider() {
   ];
   const [internships, setinternship] = useState<any>([]);
   const [jobs, setjob] = useState<any>([]);
+  const user = useSelector(selectuser);
+  const dispatch = useDispatch();
+  const router = useRouter();
   useEffect(() => {
     const fetchdata = async () => {
       try {
@@ -130,240 +139,203 @@ export default function SvgSlider() {
     };
     fetchdata();
   }, []);
-  const [selectedCategory, setSelectedCategory] = useState("");
-  const filteredInternships = internships.filter(
-    (item: any) => !selectedCategory || item.category === selectedCategory
-  );
-  const filteredJobs = jobs.filter(
-    (item: any) => !selectedCategory || item.category === selectedCategory
-  );
+
+  const handleGoogle = async () => {
+    try {
+      const result = await signInWithGoogle();
+      if (result.role === "admin") {
+        setAdmin();
+        toast.success("Logged in as admin");
+        router.push("/adminpanel");
+      } else {
+        dispatch(
+          login({
+            uid: result.uid,
+            name: result.name,
+            email: result.email,
+            photo: result.photo,
+          })
+        );
+        toast.success("Logged in successfully");
+      }
+    } catch (error) {
+      console.error(error);
+      toast.error("Google sign-in failed");
+    }
+  };
+
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-      {/* hero section */}
-      <div className="text-center mb-12">
-        <h1 className="text-4xl font-bold text-gray-900 mb-4">
-          Make your dream career a reality
-        </h1>
-        <p className="text-xl text-gray-600">Trending on InternArea 🔥</p>
-      </div>
-      {/* Swiper section */}
-      <div className="mb-16">
+    <div className="min-h-screen bg-gray-50">
+      {/* Hero Slider */}
+      <div className="bg-white">
         <Swiper
           modules={[Navigation, Pagination, Autoplay]}
-          spaceBetween={30}
-          slidesPerView={1}
           navigation
           pagination={{ clickable: true }}
-          autoplay={{ delay: 5000 }}
-          className="rounded-xl overflow-hidden shadow-lg"
+          autoplay={{ delay: 4000 }}
+          loop
+          className="h-[420px]"
         >
-          {slides.map((slide, index) => (
-            <SwiperSlide key={index}>
-              <div className={`relative h-[400px] ${slide.bgColor}`}>
-                {/* SVG Pattern Background */}
-                <div className="absolute inset-0 opacity-20">
-                  <svg
-                    className="w-full h-full"
-                    xmlns="http://www.w3.org/2000/svg"
-                  >
-                    {slide.pattern === "pattern-1" && (
-                      <pattern
-                        id="pattern-1"
-                        x="0"
-                        y="0"
-                        width="20"
-                        height="20"
-                        patternUnits="userSpaceOnUse"
-                      >
-                        <circle cx="10" cy="10" r="3" fill="white" />
-                      </pattern>
-                    )}
-                    {slide.pattern === "pattern-2" && (
-                      <pattern
-                        id="pattern-2"
-                        x="0"
-                        y="0"
-                        width="40"
-                        height="40"
-                        patternUnits="userSpaceOnUse"
-                      >
-                        <rect
-                          x="15"
-                          y="15"
-                          width="10"
-                          height="10"
-                          fill="white"
-                        />
-                      </pattern>
-                    )}
-                    {slide.pattern === "pattern-3" && (
-                      <pattern
-                        id="pattern-3"
-                        x="0"
-                        y="0"
-                        width="40"
-                        height="40"
-                        patternUnits="userSpaceOnUse"
-                      >
-                        <path d="M0 20 L20 0 L40 20 L20 40 Z" fill="white" />
-                      </pattern>
-                    )}
-                    {slide.pattern === "pattern-4" && (
-                      <pattern
-                        id="pattern-4"
-                        x="0"
-                        y="0"
-                        width="60"
-                        height="60"
-                        patternUnits="userSpaceOnUse"
-                      >
-                        <path d="M30 5 L55 30 L30 55 L5 30 Z" fill="white" />
-                      </pattern>
-                    )}
-                    <rect
-                      x="0"
-                      y="0"
-                      width="100%"
-                      height="100%"
-                      fill={`url(#${slide.pattern})`}
-                    />
-                  </svg>
-                </div>
-
-                {/* Content */}
-                <div className="absolute inset-0 flex items-center justify-center">
-                  <h2 className="text-4xl font-bold text-white">
-                    {slide.title}
-                  </h2>
-                </div>
+          {slides.map((slide, idx) => (
+            <SwiperSlide key={idx}>
+              <div
+                className={`flex items-center justify-center h-[420px] ${slide.bgColor}`}
+              >
+                <h2 className="text-3xl md:text-5xl font-bold text-white text-center px-4">
+                  {slide.title}
+                </h2>
               </div>
             </SwiperSlide>
           ))}
         </Swiper>
       </div>
-      {/* Category section */}
-      <div className="mb-12">
-        <h2 className="text-2xl font-bold text-gray-900 mb-6">
-          Latest internships on Intern Area
-        </h2>
-        <div className="flex flex-wrap gap-4">
-          <span className="text-gray-700 font-medium">POPULAR CATEGORIES:</span>
-          {categories.map((category) => (
-            <button
-              key={category}
-              onClick={() => setSelectedCategory(category)}
-              className={`px-4 py-2 rounded-full transition-colors ${
-                selectedCategory === category
-                  ? "bg-blue-600 text-white"
-                  : "bg-gray-100 text-gray-700 hover:bg-gray-200"
-              }`}
-            >
-              {category}
-            </button>
-          ))}
-        </div>
-      </div>
-      {/* INternship grid _  */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-16">
-        {filteredInternships.map((internship: any, index: any) => (
-          <div
-            key={index}
-            className="bg-white rounded-lg shadow-md p-6 transition-transform hover:transform hover:scale-105"
-          >
-            <div className="flex items-center gap-2 text-blue-600 mb-4">
-              <ArrowUpRight size={20} />
-              <span className="font-medium">Actively Hiring</span>
+
+      {/* Login Options */}
+      {!user && (
+        <div className="max-w-7xl mx-auto px-4 py-10">
+          <div className="bg-white rounded-2xl shadow-sm border border-gray-200 p-8 flex flex-col md:flex-row items-center justify-between gap-6">
+            <div>
+              <h2 className="text-2xl font-bold text-gray-900">
+                Join Internshala Today
+              </h2>
+              <p className="text-gray-600 mt-1">
+                Register to explore internships, jobs and the community
+              </p>
             </div>
-            <h3 className="text-lg font-semibold mb-2 text-gray-800">
-              {internship.title}
-            </h3>
-            <p className="text-gray-500 mb-4">{internship.company}</p>
-            <div className="space-y-3 text-gray-600">
-              <div className="flex items-center gap-2">
-                <MapPin size={18} />
-                <span>{internship.location}</span>
-              </div>
-              <div className="flex items-center gap-2">
-                <Banknote size={18} />
-                <span>{internship.stipend}</span>
-              </div>
-              <div className="flex items-center gap-2">
-                <Calendar size={18} />
-                <span>{internship.duration}</span>
-              </div>
-            </div>
-            <div className="flex items-center justify-between mt-6">
-              <span className="px-3 py-1 bg-gray-100 text-gray-600 rounded-full text-sm">
-                Internship
-              </span>
-              <Link
-                href={`/detailiternship/${internship._id}`}
-                className="text-blue-600 hover:text-blue-700 flex items-center gap-1"
-              >
-                View details
-                <ChevronRight size={16} />
+            <div className="flex flex-col sm:flex-row items-center gap-4">
+              <Link href="/login?tab=register">
+                <span className="block px-6 py-3 bg-blue-600 text-white rounded-lg font-medium hover:bg-blue-700 transition-colors text-center">
+                  Register
+                </span>
               </Link>
+              <Link href="/login?tab=admin">
+                <span className="block px-6 py-3 bg-white border border-gray-300 text-gray-700 rounded-lg font-medium hover:bg-gray-50 transition-colors text-center">
+                  Admin
+                </span>
+              </Link>
+              <button
+                onClick={handleGoogle}
+                className="px-6 py-3 bg-white border border-gray-300 text-gray-700 rounded-lg font-medium hover:bg-gray-50 transition-colors flex items-center gap-2"
+              >
+                <svg className="w-5 h-5" viewBox="0 0 24 24">
+                  <path
+                    fill="#4285F4"
+                    d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"
+                  />
+                  <path
+                    fill="#34A853"
+                    d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"
+                  />
+                  <path
+                    fill="#FBBC05"
+                    d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"
+                  />
+                  <path
+                    fill="#EA4335"
+                    d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"
+                  />
+                </svg>
+                Login with Google
+              </button>
             </div>
+          </div>
+        </div>
+      )}
+
+      {/* Stats */}
+      <div className="max-w-7xl mx-auto px-4 py-10 grid grid-cols-2 md:grid-cols-4 gap-6">
+        {stats.map((stat, idx) => (
+          <div
+            key={idx}
+            className="bg-white rounded-lg shadow-sm p-6 text-center"
+          >
+            <div className="text-2xl font-bold text-blue-600">
+              {stat.number}
+            </div>
+            <div className="text-sm text-gray-500 mt-1">{stat.label}</div>
           </div>
         ))}
       </div>
-      {/* Jobs grid   */}
-      <div className="mb-12">
-        <h2 className="text-2xl font-bold text-gray-900 mb-6">Latest Jobs</h2>
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-16">
-          {filteredJobs.map((job: any, index: any) => (
-            <div
-              key={index}
-              className="bg-white rounded-lg shadow-md p-6 transition-transform hover:transform hover:scale-105"
+
+      {/* Categories */}
+      <div className="max-w-7xl mx-auto px-4 pb-10">
+        <h3 className="text-xl font-semibold mb-4 text-black">Popular Categories</h3>
+        <div className="flex flex-wrap gap-3">
+          {categories.map((cat) => (
+            <span
+              key={cat}
+              className="px-4 py-2 bg-blue-50 text-blue-700 rounded-full text-sm"
             >
-              <div className="flex items-center gap-2 text-blue-600 mb-4">
-                <ArrowUpRight size={20} />
-                <span className="font-medium">Actively Hiring</span>
-              </div>
-              <h3 className="text-lg font-semibold mb-2 text-gray-800">
-                {job.title}
-              </h3>
-              <p className="text-gray-500 mb-4">{job.company}</p>
-              <div className="space-y-3 text-gray-600">
-                <div className="flex items-center gap-2">
-                  <MapPin size={18} />
-                  <span>{job.location}</span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <Banknote size={18} />
-                  <span>{job.CTC}</span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <Calendar size={18} />
-                  <span>{job.Experience}</span>
-                </div>
-              </div>
-              <div className="flex items-center justify-between mt-6">
-                <span className="px-3 py-1 bg-gray-100 text-gray-600 rounded-full text-sm">
-                  Jobs
-                </span>
-                <Link
-                  href={`/detailInternship?q=${job._id}`}
-                  className="text-blue-600 hover:text-blue-700 flex items-center gap-1"
-                >
-                  View details
-                  <ChevronRight size={16} />
-                </Link>
-              </div>
-            </div>
+              {cat}
+            </span>
           ))}
         </div>
       </div>
-      {/* Stat Section  */}
-      <div className="bg-white rounded-xl shadow-lg p-8 mb-16">
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
-          {stats.map((stat, index) => (
-            <div key={index} className="text-center">
-              <div className="text-4xl font-bold text-blue-600 mb-2">
-                {stat.number}
+
+      {/* Internships */}
+      <div className="max-w-7xl mx-auto px-4 pb-10">
+        <div className="flex items-center justify-between mb-4">
+          <h3 className="text-xl font-semibold text-black">Latest Internships</h3>
+          <Link
+            href="/internship"
+            className="text-blue-600 flex items-center gap-1 text-sm"
+          >
+            View all <ChevronRight className="h-4 w-4" />
+          </Link>
+        </div>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          {internships.slice(0, 6).map((item: any) => (
+            <Link
+              key={item._id}
+              href={`/detailiternship/${item._id}`}
+              className="bg-white rounded-lg shadow-sm p-5 hover:shadow-md transition"
+            >
+              <div className="flex items-center justify-between">
+                <h4 className="font-semibold">{item.title}</h4>
+                <ArrowUpRight className="h-4 w-4 text-gray-400" />
               </div>
-              <div className="text-gray-600">{stat.label}</div>
-            </div>
+              <p className="text-sm text-gray-600 mt-1">{item.company}</p>
+              <div className="flex items-center gap-2 text-sm text-gray-500 mt-2">
+                <MapPin className="h-4 w-4" /> {item.location}
+              </div>
+              <div className="flex items-center gap-2 text-sm text-gray-500 mt-1">
+                <Banknote className="h-4 w-4" /> {item.stipend}
+              </div>
+            </Link>
+          ))}
+        </div>
+      </div>
+
+      {/* Jobs */}
+      <div className="max-w-7xl mx-auto px-4 pb-16">
+        <div className="flex items-center justify-between mb-4">
+          <h3 className="text-xl font-semibold text-black">Latest Jobs</h3>
+          <Link
+            href="/job"
+            className="text-blue-600 flex items-center gap-1 text-sm"
+          >
+            View all <ChevronRight className="h-4 w-4" />
+          </Link>
+        </div>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          {jobs.slice(0, 6).map((item: any) => (
+            <Link
+              key={item._id}
+              href={`/detailjob/${item._id}`}
+              className="bg-white rounded-lg shadow-sm p-5 hover:shadow-md transition"
+            >
+              <div className="flex items-center justify-between">
+                <h4 className="font-semibold">{item.title}</h4>
+                <ArrowUpRight className="h-4 w-4 text-gray-400" />
+              </div>
+              <p className="text-sm text-gray-600 mt-1">{item.company}</p>
+              <div className="flex items-center gap-2 text-sm text-gray-500 mt-2">
+                <MapPin className="h-4 w-4" /> {item.location}
+              </div>
+              <div className="flex items-center gap-2 text-sm text-gray-500 mt-1">
+                <Calendar className="h-4 w-4" /> {item.StartDate}
+              </div>
+            </Link>
           ))}
         </div>
       </div>

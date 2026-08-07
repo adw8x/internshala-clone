@@ -3,22 +3,21 @@ const router = express.Router();
 const application = require("../Model/Application");
 
 router.post("/", async (req, res) => {
-  const applicationipdata = new application({
-    company: req.body.company,
-    category: req.body.category,
-    coverLetter: req.body.coverLetter,
-    user: req.body.user,
-    Application: req.body.Application,
-    body: req.body.body,
-  });
-  await applicationipdata
-    .save()
-    .then((data) => {
-      res.send(data);
-    })
-    .catch((error) => {
-      console.log(error);
+  try {
+    const applicationipdata = new application({
+      company: req.body.company,
+      category: req.body.category,
+      coverLetter: req.body.coverLetter,
+      user: req.body.user,
+      Application: req.body.Application,
+      availability: req.body.availability,
     });
+    const data = await applicationipdata.save();
+    res.send(data);
+  } catch (error) {
+    console.log(error);
+    res.status(500).send("Internal Server Error");
+  }
 });
 router.get("/", async (req, res) => {
   try {

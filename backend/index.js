@@ -1,4 +1,5 @@
-const bodyparser = require("body-parser");
+const bodyParser = require("body-parser");
+const path = require("path");
 const express = require("express");
 const app = express();
 const cors = require("cors");
@@ -7,9 +8,10 @@ const router = require("./Routes/index");
 const port = 5000;
 
 app.use(cors());
-app.use(bodyparser.json({ limit: "50mb" }));
-app.use(bodyparser.urlencoded({ extended: true, limit: "50mb" }));
+app.use(bodyParser.json({ limit: "50mb" }));
+app.use(bodyParser.urlencoded({ extended: true, limit: "50mb" }));
 app.use(express.json());
+app.use("/uploads", express.static(path.join(__dirname, "uploads")));
 
 app.get("/", (req, res) => {
   res.send("hello this is internshala backend");
@@ -18,12 +20,6 @@ app.use("/api", router);
 
 connect().catch(() => {
   console.log("Continuing without a database connection");
-});
-
-app.use((req, res, next) => {
-  req.header("Access-Control-Allow-Origin", "*");
-  res.header("Access-Control-Allow-Origin", "*");
-  next();
 });
 
 if (require.main === module) {

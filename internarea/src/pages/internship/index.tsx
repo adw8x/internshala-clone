@@ -53,13 +53,13 @@ const index = () => {
     location: "",
     workFromHome: false,
     partTime: false,
-    stipend: 50,
+    stipend: 0,
   });
   const [internshipData,setinternship]=useState<any>([])
   useEffect(()=>{
     const fetchdata=async()=>{
       try {
-        const res=await api.get( "/internship")     
+        const res=await api.get("/internship")     
         setinternship(res.data)
         setfilteredInternships(res.data)
       } catch (error) {
@@ -70,13 +70,42 @@ const index = () => {
   },[])
   useEffect(() => {
     const filtered = internshipData.filter((internship:any) => {
-      const matchesCategory = internship.category
+      const matchesCategory = (internship.category || "")
         .toLowerCase()
         .includes(filter.category.toLowerCase());
-      const matchesLocation = internship.location
+      const matchesLocation = (internship.location || "")
         .toLowerCase()
         .includes(filter.location.toLowerCase());
-      return matchesCategory && matchesLocation;
+      if (!matchesCategory || !matchesLocation) {
+        return false;
+      }
+      if (filter.workFromHome) {
+        const loc = (internship.location || "").toLowerCase();
+        if (
+          !loc.includes("remote") &&
+          !loc.includes("work from home") &&
+          !loc.includes("home")
+        ) {
+          return false;
+        }
+      }
+      if (filter.partTime) {
+        const t = ((internship.title || "") + " " + (internship.category || "")).toLowerCase();
+        if (!t.includes("part")) {
+          return false;
+        }
+      }
+      if (filter.stipend > 0) {
+        const s = String(internship.stipend || "");
+        const match = s.match(/\d[\d,]*/);
+        if (match && !s.includes("$")) {
+          const parsed = parseFloat(match[0].replace(/,/g, ""));
+          if (parsed < filter.stipend * 1000) {
+            return false;
+          }
+        }
+      }
+      return true;
     });
     setfilteredInternships(filtered);
   }, [filter, internshipData]);
@@ -93,7 +122,7 @@ const index = () => {
       location: "",
       workFromHome: false,
       partTime: false,
-      stipend: 50,
+      stipend: 0,
     });
   };
 

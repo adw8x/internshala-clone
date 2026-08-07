@@ -1,33 +1,119 @@
-import React, { use, useEffect, useRef, useState } from "react";
-import logo from "../Assets/logo.png";
+import React, { useEffect, useRef, useState } from "react";
 import Link from "next/link";
-import { auth, provider } from "../firebase/firebase";
-import { ChevronDown, ChevronUp, Search } from "lucide-react";
-import { signInWithPopup, signOut } from "firebase/auth";
+import { useRouter } from "next/router";
+import { auth } from "../firebase/firebase";
+import { Search } from "lucide-react";
+import { signOut } from "firebase/auth";
 import { toast } from "react-toastify";
 import { useSelector } from "react-redux";
 import { selectuser } from "@/Feature/Userslice";
-interface User {
-  name: string;
-  email: string;
-  photo: string;
+import { setAdmin } from "@/lib/auth";
+import { signInWithGoogle } from "@/lib/googleLogin";
+import api from "@/lib/api";
+
+interface SearchItem {
+  type: "internship" | "job";
+  _id: string;
+  title: string;
+  company: string;
+  location: string;
 }
+
 const Navbar = () => {
   const user = useSelector(selectuser);
+  const router = useRouter();
+  const [search, setSearch] = useState("");
+  const [results, setResults] = useState<SearchItem[]>([]);
+  const [showDropdown, setShowDropdown] = useState(false);
+  const [searching, setSearching] = useState(false);
+  const searchRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (!search.trim()) {
+      setResults([]);
+      setShowDropdown(false);
+      return;
+    }
+
+    const timer = setTimeout(async () => {
+      setSearching(true);
+      try {
+        const [internshipRes, jobRes] = await Promise.all([
+          api.get("/internship"),
+          api.get("/job"),
+        ]);
+        const q = search.trim().toLowerCase();
+        const internships: SearchItem[] = (internshipRes.data || [])
+          .filter(
+            (item: any) =>
+              item.title?.toLowerCase().includes(q) ||
+              item.company?.toLowerCase().includes(q) ||
+              item.location?.toLowerCase().includes(q) ||
+              item.category?.toLowerCase().includes(q)
+          )
+          .slice(0, 5)
+          .map((item: any) => ({
+            type: "internship" as const,
+            _id: item._id,
+            title: item.title,
+            company: item.company,
+            location: item.location,
+          }));
+        const jobs: SearchItem[] = (jobRes.data || [])
+          .filter(
+            (item: any) =>
+              item.title?.toLowerCase().includes(q) ||
+              item.company?.toLowerCase().includes(q) ||
+              item.location?.toLowerCase().includes(q) ||
+              item.category?.toLowerCase().includes(q)
+          )
+          .slice(0, 5)
+          .map((item: any) => ({
+            type: "job" as const,
+            _id: item._id,
+            title: item.title,
+            company: item.company,
+            location: item.location,
+          }));
+        setResults([...internships, ...jobs]);
+        setShowDropdown(true);
+      } catch (error) {
+        console.error("Search failed:", error);
+      } finally {
+        setSearching(false);
+      }
+    }, 300);
+
+    return () => clearTimeout(timer);
+  }, [search]);
+
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (
+        searchRef.current &&
+        !searchRef.current.contains(event.target as Node)
+      ) {
+        setShowDropdown(false);
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
+
   const handlelogin = async () => {
     try {
-      await signInWithPopup(auth, provider);
-      toast.success("logged in successfully");
+      const result = await signInWithGoogle();
+      if (result.role === "admin") {
+        setAdmin();
+        toast.success("Logged in as admin");
+        router.push("/adminpanel");
+      } else {
+        toast.success("logged in successfully");
+      }
     } catch (error) {
       console.error(error);
       toast.error("login failed");
     }
-    // setuser({
-    //   name: "Rahul",
-    //   email: "xyz@gmail.com",
-    //   photo:
-    //     "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=64&h=64&fit=crop&crop=faces",
-    // });
   };
   const handlelogout = () => {
     signOut(auth);
@@ -55,32 +141,115 @@ const Navbar = () => {
                   <span>Jobs</span>
                 </Link>
               </button>
-              <div className="flex items-center bg-gray-100 rounded-full px-4 py-2">
-                <Search size={16} className="text-gray-400" />
-                <input
-                  type="text"
-                  placeholder="Search opportunities..."
-                  className="ml-2 bg-transparent focus:outline-none text-sm w-48"
-                />
+              <button className="flex items-center space-x-1 text-gray-700 hover:text-blue-600">
+                <Link href={"/publicspace"}>
+                  <span>Public Space</span>
+                </Link>
+              </button>
+              <div className="relative" ref={searchRef}>
+                <div className="flex items-center bg-gray-100 rounded-full px-4 py-2">
+                  <Search size={16} className="text-gray-400" />
+                  <input
+                    type="text"
+                    placeholder="Search opportunities..."
+                    value={search}
+                    onChange={(e) => {
+                      setSearch(e.target.value);
+                      setShowDropdown(true);
+                    }}
+                    className="ml-2 bg-transparent focus:outline-none text-sm w-48"
+                  />
+                </div>
+                {showDropdown && (
+                  <div className="absolute top-full mt-2 w-80 bg-white shadow-lg rounded-xl border border-gray-200 py-2 z-50">
+                    {searching && (
+                      <p className="px-4 py-2 text-sm text-gray-500">
+                        Searching...
+                      </p>
+                    )}
+                    {!searching && results.length === 0 && (
+                      <p className="px-4 py-2 text-sm text-gray-500">
+                        No results found
+                      </p>
+                    )}
+                    {!searching && results.length > 0 && (
+                      <>
+                        {results.some((r) => r.type === "internship") && (
+                          <p className="px-4 pt-2 pb-1 text-xs font-semibold text-gray-400 uppercase">
+                            Internships
+                          </p>
+                        )}
+                        {results
+                          .filter((r) => r.type === "internship")
+                          .map((item) => (
+                            <Link
+                              key={`internship-${item._id}`}
+                              href={`/internship/${item._id}`}
+                              onClick={() => {
+                                setShowDropdown(false);
+                                setSearch("");
+                              }}
+                              className="block px-4 py-2 hover:bg-gray-50"
+                            >
+                              <p className="text-sm font-medium text-gray-800">
+                                {item.title}
+                              </p>
+                              <p className="text-xs text-gray-500">
+                                {item.company} · {item.location}
+                              </p>
+                            </Link>
+                          ))}
+                        {results.some((r) => r.type === "job") && (
+                          <p className="px-4 pt-2 pb-1 text-xs font-semibold text-gray-400 uppercase">
+                            Jobs
+                          </p>
+                        )}
+                        {results
+                          .filter((r) => r.type === "job")
+                          .map((item) => (
+                            <Link
+                              key={`job-${item._id}`}
+                              href={`/job/${item._id}`}
+                              onClick={() => {
+                                setShowDropdown(false);
+                                setSearch("");
+                              }}
+                              className="block px-4 py-2 hover:bg-gray-50"
+                            >
+                              <p className="text-sm font-medium text-gray-800">
+                                {item.title}
+                              </p>
+                              <p className="text-xs text-gray-500">
+                                {item.company} · {item.location}
+                              </p>
+                            </Link>
+                          ))}
+                      </>
+                    )}
+                  </div>
+                )}
               </div>
             </div>
 
             {/* Auth Buttons */}
             <div className="flex items-center space-x-4">
               {user ? (
-                <div className="relative flex">
-                  <button className="flex items-center space-x-2">
-                    {" "}
-                    <Link href={"/profile"}>
+                <div className="relative flex items-center space-x-2">
+                  <Link href={"/profile"}>
+                    {user.photo ? (
                       <img
                         src={user.photo}
-                        alt=""
+                        alt={user.name || "profile"}
                         className="w-8 h-8 rounded-full"
                       />
-                    </Link>
-                  </button>
+                    ) : (
+                      <div className="w-8 h-8 rounded-full bg-blue-600 text-white flex items-center justify-center text-sm font-semibold">
+                        {(user.name || "U").charAt(0).toUpperCase()}
+                      </div>
+                    )}
+                  </Link>
                   <button
-                    className="flex items-center w-full px-4 py-2  text-gray-700  hover:bg-gray-200 rounded-lg"
+                    className="flex items-center px-4 py-2 text-gray-700 hover:bg-gray-200 rounded-lg"
                     onClick={handlelogout}
                   >
                     Logout
@@ -88,9 +257,19 @@ const Navbar = () => {
                 </div>
               ) : (
                 <>
+                  <Link href="/login?tab=admin">
+                    <span className="text-gray-600 hover:text-gray-800">
+                      Admin
+                    </span>
+                  </Link>
+                  <Link href="/login?tab=register">
+                    <span className="text-gray-600 hover:text-gray-800">
+                      Register
+                    </span>
+                  </Link>
                   <button
                     onClick={handlelogin}
-                    className="w-full bg-white border border-gray-300 rounded-lg px-4 py-2 flex items-center justify-center space-x-2 hover:bg-gray-50 "
+                    className="bg-white border border-gray-300 rounded-lg px-4 py-2 flex items-center justify-center space-x-2 hover:bg-gray-50 "
                   >
                     <svg className="w-5 h-5" viewBox="0 0 24 24">
                       <path
@@ -110,22 +289,15 @@ const Navbar = () => {
                         d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"
                       />
                     </svg>
-                    <span className="text-gray-700">Continue with google</span>
+                    <span className="text-gray-700 hidden lg:inline">
+                      Sign in with Google
+                    </span>
+                    <span className="text-gray-700 lg:hidden">Google</span>
                   </button>
-                  {/* <button className="bg-blue-600 text-white px-4 py-2 rounded-full hover:bg-blue-700">
-                    {" "}
-                    <Link href={"/"}>Register</Link>
-                  </button> */}
-                  <a
-                    href="/adminlogin"
-                    className="text-gray-600 hover:text-gray-800"
-                  >
-                    Admin
-                  </a>
                 </>
               )}
             </div>
-          </div>{" "}
+          </div>
         </div>
       </nav>
     </div>

@@ -1,5 +1,4 @@
 import { selectuser } from "@/Feature/Userslice";
-import api from "@/lib/api";
 import {
   ArrowUpRight,
   Calendar,
@@ -14,6 +13,7 @@ import { useRouter } from "next/router";
 import React, { useEffect, useState } from "react";
 import { useSelector } from "react-redux";
 import { toast } from "react-toastify";
+import api from "@/lib/api";
 // export const internships = [
 //   {
 //     _id: "1",
@@ -74,11 +74,11 @@ import { toast } from "react-toastify";
 const index = () => {
   const router = useRouter();
   const { id } = router.query;
-  const [internshipData,setinternship]=useState<any>([])
+  const [internshipData,setinternship]=useState<any>(null)
   useEffect(()=>{
     const fetchdata=async()=>{
       try {
-        const res=await api.get( `/internship/${id}`)     
+        const res=await api.get(`/internship/${id}`)     
         setinternship(res.data)
       } catch (error) {
         console.log(error)

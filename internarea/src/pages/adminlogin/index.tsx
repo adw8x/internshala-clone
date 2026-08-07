@@ -1,8 +1,9 @@
 import { User, Lock } from "lucide-react";
 import { useRouter } from "next/navigation";
 import React, { useState } from "react";
-import api from "@/lib/api";
 import { toast } from "react-toastify";
+import api from "@/lib/api";
+import { setAdmin } from "@/lib/auth";
 
 const index = () => {
   const [formadata, setformadata] = useState({
@@ -26,10 +27,8 @@ const index = () => {
     }
     try {
       setisloading(true);
-      const res = await api.post(
-        "/admin/adminlogin",
-        formadata
-      );
+      const res = await api.post("/admin/adminlogin", formadata);
+      setAdmin();
       toast.success("logged in successfuly");
       router.push("/adminpanel");
     } catch (error) {

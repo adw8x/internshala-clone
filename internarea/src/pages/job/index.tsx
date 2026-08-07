@@ -119,14 +119,14 @@ const index = () => {
     location: "",
     workFromHome: false,
     partTime: false,
-    salary: 50,
+    salary: 0,
     experience: "",
   });
-  const [filteredJobs,setjob]=useState<any>([])
+  const [filteredJobs, setjob] = useState<any>([])
   useEffect(()=>{
     const fetchdata=async()=>{
       try {
-        const res=await api.get( "/job")     
+        const res=await api.get("/job")     
         setjob(res.data)
         setfilteredjobs(res.data)
       } catch (error) {
@@ -137,13 +137,45 @@ const index = () => {
   },[])
   useEffect(() => {
     const filtered = filteredJobs.filter((job:any) => {
-      const matchesCategory = job.category
+      const matchesCategory = (job.category || "")
         .toLowerCase()
         .includes(filter.category.toLowerCase());
-      const matchesLocation = job.location
+      const matchesLocation = (job.location || "")
         .toLowerCase()
         .includes(filter.location.toLowerCase());
-      return matchesCategory && matchesLocation;
+      const matchesExperience = (job.Experience || "")
+        .toLowerCase()
+        .includes(filter.experience.toLowerCase());
+      if (!matchesCategory || !matchesLocation || !matchesExperience) {
+        return false;
+      }
+      if (filter.workFromHome) {
+        const loc = (job.location || "").toLowerCase();
+        if (
+          !loc.includes("remote") &&
+          !loc.includes("work from home") &&
+          !loc.includes("home")
+        ) {
+          return false;
+        }
+      }
+      if (filter.partTime) {
+        const t = ((job.title || "") + " " + (job.category || "")).toLowerCase();
+        if (!t.includes("part")) {
+          return false;
+        }
+      }
+      if (filter.salary > 0) {
+        const ctc = String(job.CTC || "");
+        const match = ctc.match(/\d+(\.\d+)?/);
+        if (match && !ctc.includes("$")) {
+          const parsed = parseFloat(match[0]);
+          if (parsed < filter.salary) {
+            return false;
+          }
+        }
+      }
+      return true;
     });
     setfilteredjobs(filtered);
   }, [filter, filteredJobs]);
@@ -160,7 +192,7 @@ const index = () => {
       location: "",
       workFromHome: false,
       partTime: false,
-      salary: 50,
+      salary: 0,
       experience: "",
     });
   };

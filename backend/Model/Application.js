@@ -13,6 +13,7 @@ const Applicationipschema = new mongoose.Schema({
     enum: ["accepted", "pending", "rejected"],
     default: "pending",
   },
+  availability: String,
   Application: Object,
 });
 module.exports = mongoose.model("Application", Applicationipschema);

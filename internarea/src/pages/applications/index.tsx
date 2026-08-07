@@ -11,6 +11,7 @@ import Link from "next/link";
 import React, { useEffect, useState } from "react";
 import { toast } from "react-toastify";
 import api from "@/lib/api";
+import { useRequireAdmin } from "@/lib/auth";
 // const Applications = [
 //   {
 //     _id: "1",
@@ -39,6 +40,7 @@ import api from "@/lib/api";
 // ];
 const getStatusColor = (status: any) => {
   switch (status.toLowerCase()) {
+    case "accepted":
     case "approved":
       return "bg-green-100 text-green-800";
     case "rejected":
@@ -48,6 +50,7 @@ const getStatusColor = (status: any) => {
   }
 };
 const index = () => {
+  const isAdmin = useRequireAdmin();
   const [searchTerm, setsearchTerm] = useState("");
   const [filter, setFilter] = useState("all");
   const [data, setdata] = useState<any>([]);
@@ -62,21 +65,25 @@ const index = () => {
     };
     fetchdata();
   }, []);
+  if (!isAdmin) return null;
   // console.log(data);
   const filteredapplications = data.filter((application: any) => {
     const searchmatch =
-      application.company.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      application.category.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      application.user.name.toLowerCase().includes(searchTerm.toLowerCase());
+      (application.company || "")
+        .toLowerCase()
+        .includes(searchTerm.toLowerCase()) ||
+      (application.category || "")
+        .toLowerCase()
+        .includes(searchTerm.toLowerCase()) ||
+      (application.user?.name || "")
+        .toLowerCase()
+        .includes(searchTerm.toLowerCase());
     if (filter === "all") return searchmatch;
     return searchmatch && application.status.toLowerCase() === filter;
   });
   const handleacceptandreject = async (id: any, action: any) => {
     try {
-      const res = await api.put(
-        `/application/${id}`,
-        { action }
-      );
+      const res = await api.put(`/application/${id}`, { action });
       const updateappliacrtion = data.map((app: any) =>
         app._id === id ? res.data.data : app
       );
@@ -136,9 +143,9 @@ const index = () => {
                   Pending
                 </button>
                 <button
-                  onClick={() => setFilter("approved")}
+                  onClick={() => setFilter("accepted")}
                   className={`px-4 py-2 rounded-lg text-sm font-medium ${
-                    filter === "approved"
+                    filter === "accepted"
                       ? "bg-green-100 text-green-800"
                       : "bg-gray-100 text-gray-800"
                   }`}

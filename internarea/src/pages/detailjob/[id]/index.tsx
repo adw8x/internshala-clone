@@ -12,10 +12,10 @@ import {
   MapPin,
   X,
 } from "lucide-react";
-import api from "@/lib/api";
 import { toast } from "react-toastify";
 import { useSelector } from "react-redux";
 import { selectuser } from "@/Feature/Userslice";
+import api from "@/lib/api";
 // const filteredJobs = [
 //     {
 //       _id: "101",
@@ -120,7 +120,7 @@ const index = () => {
   const user=useSelector(selectuser)
   const router = useRouter();
   const { id } = router.query;
-  const [jobdata, setjob] = useState<any>([]);
+  const [jobdata, setjob] = useState<any>(null);
   useEffect(() => {
     const fetchdata = async () => {
       try {
@@ -161,10 +161,7 @@ const index = () => {
         Application: id,
         availability,
       };
-      await api.post(
-        "/application",
-        applicationdata
-      );
+      await api.post("/application", applicationdata);
       toast.success("Application submit successfully");
       router.push("/job");
     } catch (error) {

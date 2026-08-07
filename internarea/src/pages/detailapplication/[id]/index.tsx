@@ -1,20 +1,20 @@
-import api from "@/lib/api";
 import { Building2, Calendar, FileText, Loader2, User } from "lucide-react";
 import { useRouter } from "next/router";
 import React, { useEffect, useState } from "react";
+import api from "@/lib/api";
+import { useRequireAdmin } from "@/lib/auth";
 
 const index = () => {
   const router = useRouter();
   const { id } = router.query;
+  const isAdmin = useRequireAdmin();
   const [loading, setloading] = useState(false);
   const [data, setdata] = useState<any>([]);
   useEffect(() => {
     const fetchdata = async () => {
       try {
         setloading(true);
-        const res = await api.get(
-          `/application/${id}`
-        );
+        const res = await api.get(`/application/${id}`);
         console.log(res.data);
         setdata(res.data);
       } catch (error) {
@@ -27,6 +27,7 @@ const index = () => {
       fetchdata();
     }
   }, [id]);
+  if (!isAdmin) return null;
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center">

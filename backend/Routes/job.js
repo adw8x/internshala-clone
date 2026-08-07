@@ -4,25 +4,28 @@ const router = express.Router();
 const Job = require("../Model/Job");
 
 router.post("/", async (req, res) => {
-  const jobdata = new Job({
-    title: req.body.title,
-    company: req.body.company,
-    location: req.body.location,
-    Experience: req.body.Experience,
-    category: req.body.category,
-    aboutCompany: req.body.aboutCompany,
-    aboutJob: req.body.aboutJob,
-    whoCanApply: req.body.whoCanApply,
-    perks: req.body.perks,
-    AdditionalInfo: req.body.AdditionalInfo,
-    CTC: req.body.CTC,
-    StartDate: req.body.StartDate,
-  });
-  await jobdata.save().then((data)=>{
-    res.send(data)
-  }).catch((error)=>{
-    console.log(error)
-  })
+  try {
+    const jobdata = new Job({
+      title: req.body.title,
+      company: req.body.company,
+      location: req.body.location,
+      Experience: req.body.Experience,
+      category: req.body.category,
+      aboutCompany: req.body.aboutCompany,
+      aboutJob: req.body.aboutJob,
+      whoCanApply: req.body.whoCanApply,
+      perks: req.body.perks,
+      numberOfOpening: req.body.numberOfOpening,
+      AdditionalInfo: req.body.AdditionalInfo,
+      CTC: req.body.CTC,
+      StartDate: req.body.StartDate || req.body.startDate,
+    });
+    const data = await jobdata.save();
+    res.send(data);
+  } catch (error) {
+    console.log(error);
+    res.status(500).json({ error: "Failed to create job" });
+  }
 });
 
 router.get("/", async (req, res) => {
