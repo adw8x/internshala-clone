@@ -10,9 +10,15 @@ const Share = require('../models/Share');
 const PostingLimit = require('../Middleware/postingLimit');
 const auth = require('../Middleware/auth');
 
-const uploadsDir = path.join(__dirname, '..', 'uploads');
-if (!fs.existsSync(uploadsDir)) {
-  fs.mkdirSync(uploadsDir, { recursive: true });
+const uploadsDir = process.env.VERCEL
+  ? path.join('/tmp', 'uploads')
+  : path.join(__dirname, '..', 'uploads');
+try {
+  if (!fs.existsSync(uploadsDir)) {
+    fs.mkdirSync(uploadsDir, { recursive: true });
+  }
+} catch (e) {
+  console.warn('Could not create uploads dir:', e.message);
 }
 
 const storage = multer.diskStorage({
