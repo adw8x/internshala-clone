@@ -27,7 +27,7 @@ export default function LoginPage() {
     username: "",
   });
   const [isloading, setIsloading] = useState(false);
-  const [adminSubTab, setAdminSubTab] = useState<"signin" | "create">("signin");
+  const [adminSubTab, setAdminSubTab] = useState<"signin" | "create">("create");
   const [registerSubTab, setRegisterSubTab] = useState<"signin" | "create">("signin");
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -421,16 +421,6 @@ export default function LoginPage() {
               {/* Admin sub-tabs */}
               <div className="flex mb-6 bg-gray-100 rounded-lg p-1">
                 <button
-                  onClick={() => setAdminSubTab("signin")}
-                  className={`flex-1 py-2 text-sm font-medium rounded-md transition-colors ${
-                    adminSubTab === "signin"
-                      ? "bg-white text-blue-600 shadow-sm"
-                      : "text-gray-500 hover:text-gray-700"
-                  }`}
-                >
-                  Sign In
-                </button>
-                <button
                   onClick={() => setAdminSubTab("create")}
                   className={`flex-1 py-2 text-sm font-medium rounded-md transition-colors ${
                     adminSubTab === "create"
@@ -439,6 +429,16 @@ export default function LoginPage() {
                   }`}
                 >
                   Create Account
+                </button>
+                <button
+                  onClick={() => setAdminSubTab("signin")}
+                  className={`flex-1 py-2 text-sm font-medium rounded-md transition-colors ${
+                    adminSubTab === "signin"
+                      ? "bg-white text-blue-600 shadow-sm"
+                      : "text-gray-500 hover:text-gray-700"
+                  }`}
+                >
+                  Sign In
                 </button>
               </div>
 
