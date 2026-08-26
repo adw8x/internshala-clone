@@ -116,14 +116,14 @@ export default function LoginPage() {
 
   const handleAdminLogin = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!form.username || !form.password) {
+    if (!form.email || !form.password) {
       toast.error("Please fill in all details");
       return;
     }
     setIsloading(true);
     try {
       await api.post("/admin/adminlogin", {
-        username: form.username,
+        username: form.email,
         password: form.password,
       });
       setAdmin();
@@ -460,22 +460,22 @@ export default function LoginPage() {
               {adminSubTab === "signin" && (
                 <form className="space-y-6" onSubmit={handleAdminLogin}>
                   <div>
-                    <label htmlFor="admin-username" className="block text-sm font-medium text-gray-700">
-                      Username
+                    <label htmlFor="admin-email" className="block text-sm font-medium text-gray-700">
+                      Email
                     </label>
                     <div className="mt-1 relative rounded-md shadow-sm">
                       <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                         <User className="h-5 w-5 text-gray-400" />
                       </div>
                       <input
-                        id="admin-username"
-                        name="username"
-                        type="text"
+                        id="admin-email"
+                        name="email"
+                        type="email"
                         required
-                        value={form.username}
+                        value={form.email}
                         onChange={handleChange}
                         className={inputCls}
-                        placeholder="Enter admin username"
+                        placeholder="Enter admin email"
                       />
                     </div>
                   </div>
