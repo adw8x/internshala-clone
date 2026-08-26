@@ -8,7 +8,7 @@ import { setAdmin } from "@/lib/auth";
 import { signInWithGoogle } from "@/lib/googleLogin";
 import { login } from "@/Feature/Userslice";
 
-type Tab = "register" | "admin";
+type Tab = "register" | "login" | "admin";
 
 export default function LoginPage() {
   const router = useRouter();
@@ -27,6 +27,7 @@ export default function LoginPage() {
     username: "",
   });
   const [isloading, setIsloading] = useState(false);
+  const [adminSubTab, setAdminSubTab] = useState<"signin" | "create">("signin");
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
@@ -69,6 +70,35 @@ export default function LoginPage() {
     }
   };
 
+  const handleLogin = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!form.email || !form.password) {
+      toast.error("Please fill in all details");
+      return;
+    }
+    setIsloading(true);
+    try {
+      const res = await api.post("/auth/login", {
+        email: form.email,
+        password: form.password,
+      });
+      dispatch(
+        login({
+          uid: res.data.user.email,
+          name: res.data.user.name,
+          email: res.data.user.email,
+          photo: "",
+        })
+      );
+      toast.success("Logged in successfully");
+      goHome();
+    } catch (error: any) {
+      toast.error(error?.response?.data?.error || "Login failed");
+    } finally {
+      setIsloading(false);
+    }
+  };
+
   const handleAdminLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!form.username || !form.password) {
@@ -86,6 +116,29 @@ export default function LoginPage() {
       router.push("/adminpanel");
     } catch (error) {
       toast.error("Invalid admin credentials");
+    } finally {
+      setIsloading(false);
+    }
+  };
+
+  const handleAdminRegister = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!form.username || !form.email || !form.password) {
+      toast.error("Please fill in all details");
+      return;
+    }
+    setIsloading(true);
+    try {
+      await api.post("/admin/register", {
+        username: form.username,
+        email: form.email,
+        password: form.password,
+      });
+      toast.success("Admin account created. You can now sign in.");
+      setAdminSubTab("signin");
+      setForm((prev) => ({ ...prev, password: "" }));
+    } catch (error: any) {
+      toast.error(error?.response?.data?.error || "Failed to create admin account");
     } finally {
       setIsloading(false);
     }
@@ -121,6 +174,7 @@ export default function LoginPage() {
 
   const tabs: { key: Tab; label: string }[] = [
     { key: "register", label: "Register" },
+    { key: "login", label: "Login" },
     { key: "admin", label: "Admin" },
   ];
 
@@ -128,6 +182,24 @@ export default function LoginPage() {
     "block w-full text-black pl-10 pr-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm";
   const submitBtn =
     "w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed";
+
+  const googleLabel =
+    tab === "admin"
+      ? adminSubTab === "create"
+        ? "Sign up as Admin with Google"
+        : "Sign in as Admin with Google"
+      : tab === "login"
+      ? "Continue with Google"
+      : "Continue with Google";
+
+  const dividerText =
+    tab === "register"
+      ? "or create an account"
+      : tab === "login"
+      ? "or sign in with credentials"
+      : adminSubTab === "create"
+      ? "or create an admin account"
+      : "or use your credentials";
 
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col justify-center py-12 sm:px-6 lg:px-8">
@@ -183,24 +255,20 @@ export default function LoginPage() {
                 d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"
               />
             </svg>
-            <span className="text-gray-700">
-              {tab === "admin" ? "Sign in as Admin with Google" : "Continue with Google"}
-            </span>
+            <span className="text-gray-700">{googleLabel}</span>
           </button>
 
           <div className="flex items-center my-6">
             <div className="flex-1 border-t border-gray-200"></div>
-            <span className="px-3 text-sm text-gray-500">
-              {tab === "register" ? "or create an account" : "or use your credentials"}
-            </span>
+            <span className="px-3 text-sm text-gray-500">{dividerText}</span>
             <div className="flex-1 border-t border-gray-200"></div>
           </div>
 
-          {/* Forms */}
+          {/* Register Form */}
           {tab === "register" && (
             <form className="space-y-6" onSubmit={handleRegister}>
               <div>
-                <label htmlFor="name" className="block text-sm font-medium text-gray-700">
+                <label htmlFor="reg-name" className="block text-sm font-medium text-gray-700">
                   Full Name
                 </label>
                 <div className="mt-1 relative rounded-md shadow-sm">
@@ -208,7 +276,7 @@ export default function LoginPage() {
                     <User className="h-5 w-5 text-gray-400" />
                   </div>
                   <input
-                    id="name"
+                    id="reg-name"
                     name="name"
                     type="text"
                     required
@@ -220,7 +288,7 @@ export default function LoginPage() {
                 </div>
               </div>
               <div>
-                <label htmlFor="email" className="block text-sm font-medium text-gray-700">
+                <label htmlFor="reg-email" className="block text-sm font-medium text-gray-700">
                   Email
                 </label>
                 <div className="mt-1 relative rounded-md shadow-sm">
@@ -228,7 +296,7 @@ export default function LoginPage() {
                     <User className="h-5 w-5 text-gray-400" />
                   </div>
                   <input
-                    id="email"
+                    id="reg-email"
                     name="email"
                     type="email"
                     required
@@ -240,7 +308,7 @@ export default function LoginPage() {
                 </div>
               </div>
               <div>
-                <label htmlFor="password" className="block text-sm font-medium text-gray-700">
+                <label htmlFor="reg-password" className="block text-sm font-medium text-gray-700">
                   Password
                 </label>
                 <div className="mt-1 relative rounded-md shadow-sm">
@@ -248,7 +316,7 @@ export default function LoginPage() {
                     <Lock className="h-5 w-5 text-gray-400" />
                   </div>
                   <input
-                    id="password"
+                    id="reg-password"
                     name="password"
                     type="password"
                     required
@@ -267,30 +335,31 @@ export default function LoginPage() {
             </form>
           )}
 
-          {tab === "admin" && (
-            <form className="space-y-6" onSubmit={handleAdminLogin}>
+          {/* Login Form */}
+          {tab === "login" && (
+            <form className="space-y-6" onSubmit={handleLogin}>
               <div>
-                <label htmlFor="username" className="block text-sm font-medium text-gray-700">
-                  Username
+                <label htmlFor="login-email" className="block text-sm font-medium text-gray-700">
+                  Email
                 </label>
                 <div className="mt-1 relative rounded-md shadow-sm">
                   <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                     <User className="h-5 w-5 text-gray-400" />
                   </div>
                   <input
-                    id="username"
-                    name="username"
-                    type="text"
+                    id="login-email"
+                    name="email"
+                    type="email"
                     required
-                    value={form.username}
+                    value={form.email}
                     onChange={handleChange}
                     className={inputCls}
-                    placeholder="Enter admin username"
+                    placeholder="Enter your email"
                   />
                 </div>
               </div>
               <div>
-                <label htmlFor="admin-password" className="block text-sm font-medium text-gray-700">
+                <label htmlFor="login-password" className="block text-sm font-medium text-gray-700">
                   Password
                 </label>
                 <div className="mt-1 relative rounded-md shadow-sm">
@@ -298,23 +367,174 @@ export default function LoginPage() {
                     <Lock className="h-5 w-5 text-gray-400" />
                   </div>
                   <input
-                    id="admin-password"
+                    id="login-password"
                     name="password"
                     type="password"
                     required
                     value={form.password}
                     onChange={handleChange}
                     className={inputCls}
-                    placeholder="Enter admin password"
+                    placeholder="Enter your password"
                   />
                 </div>
               </div>
               <div>
                 <button type="submit" disabled={isloading} className={submitBtn}>
-                  {isloading ? "Signing in..." : "Sign in as Admin"}
+                  {isloading ? "Signing in..." : "Sign in"}
                 </button>
               </div>
             </form>
+          )}
+
+          {/* Admin Tab */}
+          {tab === "admin" && (
+            <>
+              {/* Admin sub-tabs */}
+              <div className="flex mb-6 bg-gray-100 rounded-lg p-1">
+                <button
+                  onClick={() => setAdminSubTab("signin")}
+                  className={`flex-1 py-2 text-sm font-medium rounded-md transition-colors ${
+                    adminSubTab === "signin"
+                      ? "bg-white text-blue-600 shadow-sm"
+                      : "text-gray-500 hover:text-gray-700"
+                  }`}
+                >
+                  Sign In
+                </button>
+                <button
+                  onClick={() => setAdminSubTab("create")}
+                  className={`flex-1 py-2 text-sm font-medium rounded-md transition-colors ${
+                    adminSubTab === "create"
+                      ? "bg-white text-blue-600 shadow-sm"
+                      : "text-gray-500 hover:text-gray-700"
+                  }`}
+                >
+                  Create Account
+                </button>
+              </div>
+
+              {/* Admin Sign In */}
+              {adminSubTab === "signin" && (
+                <form className="space-y-6" onSubmit={handleAdminLogin}>
+                  <div>
+                    <label htmlFor="admin-username" className="block text-sm font-medium text-gray-700">
+                      Username
+                    </label>
+                    <div className="mt-1 relative rounded-md shadow-sm">
+                      <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                        <User className="h-5 w-5 text-gray-400" />
+                      </div>
+                      <input
+                        id="admin-username"
+                        name="username"
+                        type="text"
+                        required
+                        value={form.username}
+                        onChange={handleChange}
+                        className={inputCls}
+                        placeholder="Enter admin username"
+                      />
+                    </div>
+                  </div>
+                  <div>
+                    <label htmlFor="admin-signin-password" className="block text-sm font-medium text-gray-700">
+                      Password
+                    </label>
+                    <div className="mt-1 relative rounded-md shadow-sm">
+                      <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                        <Lock className="h-5 w-5 text-gray-400" />
+                      </div>
+                      <input
+                        id="admin-signin-password"
+                        name="password"
+                        type="password"
+                        required
+                        value={form.password}
+                        onChange={handleChange}
+                        className={inputCls}
+                        placeholder="Enter admin password"
+                      />
+                    </div>
+                  </div>
+                  <div>
+                    <button type="submit" disabled={isloading} className={submitBtn}>
+                      {isloading ? "Signing in..." : "Sign in as Admin"}
+                    </button>
+                  </div>
+                </form>
+              )}
+
+              {/* Admin Create Account */}
+              {adminSubTab === "create" && (
+                <form className="space-y-6" onSubmit={handleAdminRegister}>
+                  <div>
+                    <label htmlFor="admin-create-username" className="block text-sm font-medium text-gray-700">
+                      Admin Name
+                    </label>
+                    <div className="mt-1 relative rounded-md shadow-sm">
+                      <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                        <User className="h-5 w-5 text-gray-400" />
+                      </div>
+                      <input
+                        id="admin-create-username"
+                        name="username"
+                        type="text"
+                        required
+                        value={form.username}
+                        onChange={handleChange}
+                        className={inputCls}
+                        placeholder="Enter admin name"
+                      />
+                    </div>
+                  </div>
+                  <div>
+                    <label htmlFor="admin-create-email" className="block text-sm font-medium text-gray-700">
+                      Email
+                    </label>
+                    <div className="mt-1 relative rounded-md shadow-sm">
+                      <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                        <User className="h-5 w-5 text-gray-400" />
+                      </div>
+                      <input
+                        id="admin-create-email"
+                        name="email"
+                        type="email"
+                        required
+                        value={form.email}
+                        onChange={handleChange}
+                        className={inputCls}
+                        placeholder="Enter admin email"
+                      />
+                    </div>
+                  </div>
+                  <div>
+                    <label htmlFor="admin-create-password" className="block text-sm font-medium text-gray-700">
+                      Password
+                    </label>
+                    <div className="mt-1 relative rounded-md shadow-sm">
+                      <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                        <Lock className="h-5 w-5 text-gray-400" />
+                      </div>
+                      <input
+                        id="admin-create-password"
+                        name="password"
+                        type="password"
+                        required
+                        value={form.password}
+                        onChange={handleChange}
+                        className={inputCls}
+                        placeholder="At least 6 characters"
+                      />
+                    </div>
+                  </div>
+                  <div>
+                    <button type="submit" disabled={isloading} className={submitBtn}>
+                      {isloading ? "Creating account..." : "Create Admin Account"}
+                    </button>
+                  </div>
+                </form>
+              )}
+            </>
           )}
         </div>
       </div>
