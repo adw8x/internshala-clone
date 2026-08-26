@@ -7,7 +7,7 @@ import { Provider, useDispatch } from "react-redux";
 import { useEffect } from "react";
 import { auth } from "@/firebase/firebase";
 import { login, logout } from "@/Feature/Userslice";
-import { isAdmin } from "@/lib/auth";
+import { isAdmin, getAdminUser } from "@/lib/auth";
 import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 export default function App({ Component, pageProps }: AppProps) {
@@ -25,7 +25,12 @@ export default function App({ Component, pageProps }: AppProps) {
               phoneNumber: authuser.phoneNumber,
             })
           );
-        } else if (!isAdmin()) {
+        } else if (isAdmin()) {
+          const adminUser = getAdminUser();
+          if (adminUser) {
+            dispatch(login(adminUser));
+          }
+        } else {
           dispatch(logout());
         }
       });

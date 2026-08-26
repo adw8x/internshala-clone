@@ -180,7 +180,7 @@ export default function LoginPage() {
     try {
       const result = await signInWithGoogle();
       if (result.role === "admin") {
-        setAdmin();
+        setAdmin({ email: result.email, name: result.name });
         toast.success("Logged in as admin");
         router.push("/adminpanel");
       } else {
