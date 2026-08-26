@@ -19,6 +19,11 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       return res.status(409).json({ error: "An account with this email already exists" });
     }
 
+    const nameExists = await Account.findOne({ name: username });
+    if (nameExists) {
+      return res.status(409).json({ error: "This username is already taken" });
+    }
+
     const passwordHash = await bcrypt.hash(String(password), 10);
     const account = await Account.create({
       email: String(email || username).toLowerCase(),

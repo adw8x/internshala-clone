@@ -17,9 +17,20 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     let created = false;
 
     if (!account) {
+      let displayName = name || String(email).split("@")[0];
+      let nameExists = await Account.findOne({ name: displayName });
+      if (nameExists) {
+        let counter = 1;
+        while (nameExists) {
+          displayName = `${name || String(email).split("@")[0]}${counter}`;
+          nameExists = await Account.findOne({ name: displayName });
+          counter++;
+        }
+      }
+
       account = await Account.create({
         email: String(email).toLowerCase(),
-        name: name || String(email).split("@")[0],
+        name: displayName,
         photo,
         firebaseUid,
         role: "user",
