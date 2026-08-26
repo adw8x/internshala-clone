@@ -122,11 +122,27 @@ export default function LoginPage() {
     }
     setIsloading(true);
     try {
-      await api.post("/admin/adminlogin", {
+      const res = await api.post("/admin/adminlogin", {
         username: form.email,
         password: form.password,
       });
       setAdmin();
+      try {
+        await signInWithEmailAndPassword(auth, form.email, form.password);
+      } catch {
+        try {
+          const cred = await createUserWithEmailAndPassword(auth, form.email, form.password);
+          await updateProfile(cred.user, { displayName: res.data.user.name });
+        } catch {}
+      }
+      dispatch(
+        login({
+          uid: res.data.user.email,
+          name: res.data.user.name,
+          email: res.data.user.email,
+          photo: "",
+        })
+      );
       toast.success("Logged in as admin");
       router.push("/adminpanel");
     } catch (error) {
