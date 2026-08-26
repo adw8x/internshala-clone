@@ -29,7 +29,14 @@ export default async function handler(
     const currentUserId = authReq.user!.id;
     const search = (authReq.query.search as string) || "";
 
-    const query: any = { _id: { $ne: currentUserId } };
+    const currentUser = await User.findById(currentUserId).select("email firebaseUid");
+    const query: any = {
+      _id: { $ne: currentUserId },
+    };
+
+    if (currentUser?.email) {
+      query.email = { $ne: currentUser.email };
+    }
 
     if (search.trim()) {
       query.$or = [
