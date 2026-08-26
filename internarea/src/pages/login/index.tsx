@@ -8,7 +8,7 @@ import { setAdmin } from "@/lib/auth";
 import { signInWithGoogle } from "@/lib/googleLogin";
 import { login } from "@/Feature/Userslice";
 
-type Tab = "register" | "login" | "admin";
+type Tab = "register" | "admin";
 
 export default function LoginPage() {
   const router = useRouter();
@@ -28,6 +28,7 @@ export default function LoginPage() {
   });
   const [isloading, setIsloading] = useState(false);
   const [adminSubTab, setAdminSubTab] = useState<"signin" | "create">("signin");
+  const [registerSubTab, setRegisterSubTab] = useState<"signin" | "create">("signin");
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
@@ -174,7 +175,6 @@ export default function LoginPage() {
 
   const tabs: { key: Tab; label: string }[] = [
     { key: "register", label: "Register" },
-    { key: "login", label: "Login" },
     { key: "admin", label: "Admin" },
   ];
 
@@ -188,15 +188,15 @@ export default function LoginPage() {
       ? adminSubTab === "create"
         ? "Sign up as Admin with Google"
         : "Sign in as Admin with Google"
-      : tab === "login"
-      ? "Continue with Google"
+      : registerSubTab === "create"
+      ? "Create account with Google"
       : "Continue with Google";
 
   const dividerText =
     tab === "register"
-      ? "or create an account"
-      : tab === "login"
-      ? "or sign in with credentials"
+      ? registerSubTab === "create"
+        ? "or create an account"
+        : "or use your credentials"
       : adminSubTab === "create"
       ? "or create an admin account"
       : "or use your credentials";
@@ -264,126 +264,155 @@ export default function LoginPage() {
             <div className="flex-1 border-t border-gray-200"></div>
           </div>
 
-          {/* Register Form */}
+          {/* Register Tab */}
           {tab === "register" && (
-            <form className="space-y-6" onSubmit={handleRegister}>
-              <div>
-                <label htmlFor="reg-name" className="block text-sm font-medium text-gray-700">
-                  Full Name
-                </label>
-                <div className="mt-1 relative rounded-md shadow-sm">
-                  <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                    <User className="h-5 w-5 text-gray-400" />
-                  </div>
-                  <input
-                    id="reg-name"
-                    name="name"
-                    type="text"
-                    required
-                    value={form.name}
-                    onChange={handleChange}
-                    className={inputCls}
-                    placeholder="Enter your full name"
-                  />
-                </div>
-              </div>
-              <div>
-                <label htmlFor="reg-email" className="block text-sm font-medium text-gray-700">
-                  Email
-                </label>
-                <div className="mt-1 relative rounded-md shadow-sm">
-                  <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                    <User className="h-5 w-5 text-gray-400" />
-                  </div>
-                  <input
-                    id="reg-email"
-                    name="email"
-                    type="email"
-                    required
-                    value={form.email}
-                    onChange={handleChange}
-                    className={inputCls}
-                    placeholder="Enter your email"
-                  />
-                </div>
-              </div>
-              <div>
-                <label htmlFor="reg-password" className="block text-sm font-medium text-gray-700">
-                  Password
-                </label>
-                <div className="mt-1 relative rounded-md shadow-sm">
-                  <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                    <Lock className="h-5 w-5 text-gray-400" />
-                  </div>
-                  <input
-                    id="reg-password"
-                    name="password"
-                    type="password"
-                    required
-                    value={form.password}
-                    onChange={handleChange}
-                    className={inputCls}
-                    placeholder="At least 6 characters"
-                  />
-                </div>
-              </div>
-              <div>
-                <button type="submit" disabled={isloading} className={submitBtn}>
-                  {isloading ? "Registering..." : "Create Account"}
+            <>
+              {/* Register sub-tabs */}
+              <div className="flex mb-6 bg-gray-100 rounded-lg p-1">
+                <button
+                  onClick={() => setRegisterSubTab("create")}
+                  className={`flex-1 py-2 text-sm font-medium rounded-md transition-colors ${
+                    registerSubTab === "create"
+                      ? "bg-white text-blue-600 shadow-sm"
+                      : "text-gray-500 hover:text-gray-700"
+                  }`}
+                >
+                  Create Account
+                </button>
+                <button
+                  onClick={() => setRegisterSubTab("signin")}
+                  className={`flex-1 py-2 text-sm font-medium rounded-md transition-colors ${
+                    registerSubTab === "signin"
+                      ? "bg-white text-blue-600 shadow-sm"
+                      : "text-gray-500 hover:text-gray-700"
+                  }`}
+                >
+                  Sign In
                 </button>
               </div>
-            </form>
-          )}
 
-          {/* Login Form */}
-          {tab === "login" && (
-            <form className="space-y-6" onSubmit={handleLogin}>
-              <div>
-                <label htmlFor="login-email" className="block text-sm font-medium text-gray-700">
-                  Email
-                </label>
-                <div className="mt-1 relative rounded-md shadow-sm">
-                  <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                    <User className="h-5 w-5 text-gray-400" />
+              {/* Create Account */}
+              {registerSubTab === "create" && (
+                <form className="space-y-6" onSubmit={handleRegister}>
+                  <div>
+                    <label htmlFor="reg-name" className="block text-sm font-medium text-gray-700">
+                      Full Name
+                    </label>
+                    <div className="mt-1 relative rounded-md shadow-sm">
+                      <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                        <User className="h-5 w-5 text-gray-400" />
+                      </div>
+                      <input
+                        id="reg-name"
+                        name="name"
+                        type="text"
+                        required
+                        value={form.name}
+                        onChange={handleChange}
+                        className={inputCls}
+                        placeholder="Enter your full name"
+                      />
+                    </div>
                   </div>
-                  <input
-                    id="login-email"
-                    name="email"
-                    type="email"
-                    required
-                    value={form.email}
-                    onChange={handleChange}
-                    className={inputCls}
-                    placeholder="Enter your email"
-                  />
-                </div>
-              </div>
-              <div>
-                <label htmlFor="login-password" className="block text-sm font-medium text-gray-700">
-                  Password
-                </label>
-                <div className="mt-1 relative rounded-md shadow-sm">
-                  <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                    <Lock className="h-5 w-5 text-gray-400" />
+                  <div>
+                    <label htmlFor="reg-email" className="block text-sm font-medium text-gray-700">
+                      Email
+                    </label>
+                    <div className="mt-1 relative rounded-md shadow-sm">
+                      <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                        <User className="h-5 w-5 text-gray-400" />
+                      </div>
+                      <input
+                        id="reg-email"
+                        name="email"
+                        type="email"
+                        required
+                        value={form.email}
+                        onChange={handleChange}
+                        className={inputCls}
+                        placeholder="Enter your email"
+                      />
+                    </div>
                   </div>
-                  <input
-                    id="login-password"
-                    name="password"
-                    type="password"
-                    required
-                    value={form.password}
-                    onChange={handleChange}
-                    className={inputCls}
-                    placeholder="Enter your password"
-                  />
-                </div>
-              </div>
-              <div>
-                <button type="submit" disabled={isloading} className={submitBtn}>
-                  {isloading ? "Signing in..." : "Sign in"}
-                </button>
-              </div>
-            </form>
+                  <div>
+                    <label htmlFor="reg-password" className="block text-sm font-medium text-gray-700">
+                      Password
+                    </label>
+                    <div className="mt-1 relative rounded-md shadow-sm">
+                      <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                        <Lock className="h-5 w-5 text-gray-400" />
+                      </div>
+                      <input
+                        id="reg-password"
+                        name="password"
+                        type="password"
+                        required
+                        value={form.password}
+                        onChange={handleChange}
+                        className={inputCls}
+                        placeholder="At least 6 characters"
+                      />
+                    </div>
+                  </div>
+                  <div>
+                    <button type="submit" disabled={isloading} className={submitBtn}>
+                      {isloading ? "Registering..." : "Create Account"}
+                    </button>
+                  </div>
+                </form>
+              )}
+
+              {/* Sign In */}
+              {registerSubTab === "signin" && (
+                <form className="space-y-6" onSubmit={handleLogin}>
+                  <div>
+                    <label htmlFor="login-email" className="block text-sm font-medium text-gray-700">
+                      Email
+                    </label>
+                    <div className="mt-1 relative rounded-md shadow-sm">
+                      <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                        <User className="h-5 w-5 text-gray-400" />
+                      </div>
+                      <input
+                        id="login-email"
+                        name="email"
+                        type="email"
+                        required
+                        value={form.email}
+                        onChange={handleChange}
+                        className={inputCls}
+                        placeholder="Enter your email"
+                      />
+                    </div>
+                  </div>
+                  <div>
+                    <label htmlFor="login-password" className="block text-sm font-medium text-gray-700">
+                      Password
+                    </label>
+                    <div className="mt-1 relative rounded-md shadow-sm">
+                      <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                        <Lock className="h-5 w-5 text-gray-400" />
+                      </div>
+                      <input
+                        id="login-password"
+                        name="password"
+                        type="password"
+                        required
+                        value={form.password}
+                        onChange={handleChange}
+                        className={inputCls}
+                        placeholder="Enter your password"
+                      />
+                    </div>
+                  </div>
+                  <div>
+                    <button type="submit" disabled={isloading} className={submitBtn}>
+                      {isloading ? "Signing in..." : "Sign in"}
+                    </button>
+                  </div>
+                </form>
+              )}
+            </>
           )}
 
           {/* Admin Tab */}
