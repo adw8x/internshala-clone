@@ -1,18 +1,22 @@
-import { selectuser } from "@/Feature/Userslice";
-import { ExternalLink, Mail, User, Users } from "lucide-react";
+import { logout, selectuser } from "@/Feature/Userslice";
+import { clearAdmin } from "@/lib/auth";
+import { ExternalLink, Mail, Trash2, User, Users, X } from "lucide-react";
+import { signOut } from "firebase/auth";
+import { auth } from "@/firebase/firebase";
 import Link from "next/link";
+import { useRouter } from "next/router";
 import React, { useEffect, useState } from "react";
-import { useSelector } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import api, { authHeaders } from "@/lib/api";
-interface UserProfile {
-  name: string;
-  email: string;
-  photo: string;
-}
+
 const index = () => {
   const user = useSelector(selectuser);
+  const dispatch = useDispatch();
+  const router = useRouter();
   const [stats, setStats] = useState({ active: 0, accepted: 0 });
   const [friendCount, setFriendCount] = useState(0);
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [deleting, setDeleting] = useState(false);
 
   useEffect(() => {
     if (!user?.name) return;
@@ -42,6 +46,22 @@ const index = () => {
       .then((res) => setFriendCount(res.data.connections.length))
       .catch(() => {});
   }, [user]);
+
+  const handleDeleteAccount = async () => {
+    setDeleting(true);
+    try {
+      await api.post("/account/delete", null, { headers: authHeaders(user) });
+      clearAdmin();
+      dispatch(logout());
+      await signOut(auth).catch(() => {});
+      router.push("/");
+    } catch (err) {
+      console.error("Delete failed:", err);
+      setDeleting(false);
+      alert("Failed to delete account. Please try again.");
+    }
+  };
+
   return (
     <div className="min-h-screen bg-gray-50 py-12">
       <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -104,7 +124,7 @@ const index = () => {
               </div>
 
               {/* Actions */}
-              <div className="flex justify-center pt-4">
+              <div className="flex justify-center gap-4 pt-4">
                 <Link
                   href="/userapplication"
                   className="inline-flex items-center px-6 py-3 bg-blue-600 text-white font-medium rounded-lg hover:bg-blue-700 transition-colors duration-200"
@@ -112,11 +132,55 @@ const index = () => {
                   View Applications
                   <ExternalLink className="ml-2 h-4 w-4" />
                 </Link>
+                <button
+                  onClick={() => setShowDeleteModal(true)}
+                  className="inline-flex items-center px-6 py-3 bg-white border border-red-300 text-red-600 font-medium rounded-lg hover:bg-red-50 transition-colors duration-200"
+                >
+                  Delete Account
+                  <Trash2 className="ml-2 h-4 w-4" />
+                </button>
               </div>
             </div>
           </div>
         </div>
       </div>
+
+      {/* Delete Confirmation Modal */}
+      {showDeleteModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
+          <div className="bg-white rounded-xl shadow-xl max-w-md w-full mx-4 p-6">
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="text-lg font-semibold text-gray-900">
+                Delete Account
+              </h3>
+              <button onClick={() => setShowDeleteModal(false)}>
+                <X className="h-5 w-5 text-gray-400 hover:text-gray-600" />
+              </button>
+            </div>
+            <p className="text-gray-600 mb-6">
+              This will permanently delete your account, all your posts, comments,
+              connections, and applications. Your name and email will be freed up.
+              This action cannot be undone.
+            </p>
+            <div className="flex justify-end gap-3">
+              <button
+                onClick={() => setShowDeleteModal(false)}
+                disabled={deleting}
+                className="px-4 py-2 text-gray-600 hover:text-gray-800 disabled:opacity-50"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleDeleteAccount}
+                disabled={deleting}
+                className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 disabled:opacity-50"
+              >
+                {deleting ? "Deleting..." : "Yes, Delete My Account"}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
