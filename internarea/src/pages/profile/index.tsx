@@ -1,26 +1,23 @@
 import { selectuser } from "@/Feature/Userslice";
-import { ExternalLink, Mail, User } from "lucide-react";
+import { ExternalLink, Mail, User, Users } from "lucide-react";
 import Link from "next/link";
 import React, { useEffect, useState } from "react";
 import { useSelector } from "react-redux";
-import api from "@/lib/api";
-interface User {
+import api, { authHeaders } from "@/lib/api";
+interface UserProfile {
   name: string;
   email: string;
   photo: string;
 }
 const index = () => {
-  // const [user, setuser] = useState<User | null>({
-  //   name: "Rahul",
-  //   email: "xyz@gmail.com",
-  //   photo:
-  //     "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=64&h=64&fit=crop&crop=faces",
-  // });
-  const user=useSelector(selectuser)
+  const user = useSelector(selectuser);
   const [stats, setStats] = useState({ active: 0, accepted: 0 });
+  const [friendCount, setFriendCount] = useState(0);
+
   useEffect(() => {
     if (!user?.name) return;
-    api.get("/application")
+    api
+      .get("/application")
       .then((res) => {
         const apps = (res.data || []).filter(
           (app: any) => app.user?.name === user.name
@@ -30,8 +27,21 @@ const index = () => {
           accepted: apps.filter((app: any) => app.status === "accepted").length,
         });
       })
-      .catch((error) => console.error("Failed to load application stats:", error));
+      .catch((error) =>
+        console.error("Failed to load application stats:", error)
+      );
   }, [user?.name]);
+
+  useEffect(() => {
+    if (!user) return;
+    api
+      .get("/connection/list", {
+        params: { type: "connections" },
+        headers: authHeaders(user),
+      })
+      .then((res) => setFriendCount(res.data.connections.length))
+      .catch(() => {});
+  }, [user]);
   return (
     <div className="min-h-screen bg-gray-50 py-12">
       <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -66,7 +76,7 @@ const index = () => {
             {/* Profile Details */}
             <div className="space-y-6">
               {/* Quick Stats */}
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-3 gap-4">
                 <div className="bg-blue-50 rounded-lg p-4 text-center">
                   <span className="text-blue-600 font-semibold text-2xl">
                     {stats.active}
@@ -81,6 +91,14 @@ const index = () => {
                   </span>
                   <p className="text-green-600 text-sm mt-1">
                     Accepted Applications
+                  </p>
+                </div>
+                <div className="bg-purple-50 rounded-lg p-4 text-center">
+                  <span className="text-purple-600 font-semibold text-2xl">
+                    {friendCount}
+                  </span>
+                  <p className="text-purple-600 text-sm mt-1">
+                    Connections
                   </p>
                 </div>
               </div>
