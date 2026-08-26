@@ -23,7 +23,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     }
 
     const displayName = name || String(email).split("@")[0];
-    const nameExists = await Account.findOne({ name: displayName });
+    const nameExists = await Account.findOne({ name: { $regex: `^${displayName}$`, $options: "i" } });
     if (nameExists) {
       return res.status(409).json({ error: "This username is already taken" });
     }

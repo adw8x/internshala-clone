@@ -18,12 +18,12 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
     if (!account) {
       let displayName = name || String(email).split("@")[0];
-      let nameExists = await Account.findOne({ name: displayName });
+      let nameExists = await Account.findOne({ name: { $regex: `^${displayName}$`, $options: "i" } });
       if (nameExists) {
         let counter = 1;
         while (nameExists) {
           displayName = `${name || String(email).split("@")[0]}${counter}`;
-          nameExists = await Account.findOne({ name: displayName });
+          nameExists = await Account.findOne({ name: { $regex: `^${displayName}$`, $options: "i" } });
           counter++;
         }
       }

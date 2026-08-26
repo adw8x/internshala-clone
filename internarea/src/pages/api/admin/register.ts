@@ -19,7 +19,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       return res.status(409).json({ error: "An account with this email already exists" });
     }
 
-    const nameExists = await Account.findOne({ name: username });
+    const nameExists = await Account.findOne({ name: { $regex: `^${username}$`, $options: "i" } });
     if (nameExists) {
       return res.status(409).json({ error: "This username is already taken" });
     }
