@@ -33,7 +33,10 @@ export default function LoginPage() {
     setForm((prev) => ({ ...prev, [name]: value }));
   };
 
-  const goHome = () => router.push("/");
+  const goHome = () => {
+    const returnTo = router.query.returnTo as string;
+    router.push(returnTo || "/");
+  };
 
   const handleRegister = async (e: React.FormEvent) => {
     e.preventDefault();
