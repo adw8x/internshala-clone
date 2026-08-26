@@ -23,7 +23,7 @@ async function handler(req: AuthRequest, res: NextApiResponse) {
     await db.collection("applications").deleteMany({ "user.name": userName });
     await db.collection("users").updateMany(
       { _id: { $ne: userId }, friends: userId },
-      { $pull: { friends: userId } }
+      { $pull: { friends: userId } as any }
     );
 
     res.status(200).json({ message: "Account deleted successfully" });
