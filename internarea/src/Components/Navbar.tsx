@@ -5,9 +5,10 @@ import { auth } from "../firebase/firebase";
 import { Search } from "lucide-react";
 import { signOut } from "firebase/auth";
 import { toast } from "react-toastify";
-import { useSelector } from "react-redux";
+import { useSelector, useDispatch } from "react-redux";
 import { selectuser } from "@/Feature/Userslice";
-import { setAdmin } from "@/lib/auth";
+import { logout } from "@/Feature/Userslice";
+import { setAdmin, clearAdmin } from "@/lib/auth";
 import { signInWithGoogle } from "@/lib/googleLogin";
 import api from "@/lib/api";
 
@@ -21,6 +22,7 @@ interface SearchItem {
 
 const Navbar = () => {
   const user = useSelector(selectuser);
+  const dispatch = useDispatch();
   const router = useRouter();
   const [search, setSearch] = useState("");
   const [results, setResults] = useState<SearchItem[]>([]);
@@ -116,7 +118,10 @@ const Navbar = () => {
     }
   };
   const handlelogout = () => {
+    clearAdmin();
+    dispatch(logout());
     signOut(auth);
+    router.push("/");
   };
   return (
     <div className="relative">

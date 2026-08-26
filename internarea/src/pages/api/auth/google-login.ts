@@ -1,6 +1,7 @@
 import type { NextApiRequest, NextApiResponse } from "next";
 import { connectToDatabase } from "@/lib/db";
 import Account from "@/lib/models/Account";
+import User from "@/lib/models/User";
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   if (req.method !== "POST") return res.status(405).json({ error: "Method not allowed" });
@@ -26,12 +27,28 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         provider: "google",
       });
       created = true;
+
+      await User.create({
+        firebaseUid,
+        name: name || String(email).split("@")[0],
+        email: String(email).toLowerCase(),
+        photo: photo || "",
+        friends: [],
+      });
     } else {
       account.name = name || account.name;
       account.photo = photo || account.photo;
       account.firebaseUid = firebaseUid;
       account.provider = "google";
       await account.save();
+
+      if (firebaseUid) {
+        await User.findOneAndUpdate(
+          { firebaseUid },
+          { name: name || account.name, photo: photo || account.photo },
+          { upsert: true }
+        );
+      }
     }
 
     res.json({

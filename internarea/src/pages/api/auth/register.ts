@@ -2,6 +2,7 @@ import type { NextApiRequest, NextApiResponse } from "next";
 import bcrypt from "bcryptjs";
 import { connectToDatabase } from "@/lib/db";
 import Account from "@/lib/models/Account";
+import User from "@/lib/models/User";
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   if (req.method !== "POST") return res.status(405).json({ error: "Method not allowed" });
@@ -29,6 +30,15 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       passwordHash,
       role: role === "admin" ? "admin" : "user",
       provider: "password",
+    });
+
+    const displayName = name || String(email).split("@")[0];
+    await User.create({
+      firebaseUid: account._id.toString(),
+      name: displayName,
+      email: String(email).toLowerCase(),
+      photo: "",
+      friends: [],
     });
 
     res.status(201).json({
