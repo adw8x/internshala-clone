@@ -276,7 +276,7 @@ const Navbar = () => {
                   </Link>
                   <Link href="/login?tab=register">
                     <span className="text-gray-600 hover:text-gray-800">
-                      Register
+                      User
                     </span>
                   </Link>
                   <button

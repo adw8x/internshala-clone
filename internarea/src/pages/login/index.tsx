@@ -204,7 +204,7 @@ export default function LoginPage() {
   };
 
   const tabs: { key: Tab; label: string }[] = [
-    { key: "register", label: "Register" },
+    { key: "register", label: "User" },
     { key: "admin", label: "Admin" },
   ];
 
