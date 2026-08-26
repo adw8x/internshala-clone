@@ -3,6 +3,8 @@ import { useRouter } from "next/router";
 import React, { useEffect, useState } from "react";
 import { useDispatch } from "react-redux";
 import { toast } from "react-toastify";
+import { signInWithEmailAndPassword, createUserWithEmailAndPassword, updateProfile } from "firebase/auth";
+import { auth } from "@/firebase/firebase";
 import api from "@/lib/api";
 import { setAdmin } from "@/lib/auth";
 import { signInWithGoogle } from "@/lib/googleLogin";
@@ -54,6 +56,10 @@ export default function LoginPage() {
         password: form.password,
         role: "user",
       });
+      try {
+        const cred = await createUserWithEmailAndPassword(auth, form.email, form.password);
+        await updateProfile(cred.user, { displayName: form.name });
+      } catch {}
       dispatch(
         login({
           uid: res.data.user.email,
@@ -65,7 +71,7 @@ export default function LoginPage() {
       toast.success("Registered successfully");
       goHome();
     } catch (error: any) {
-      toast.error(error?.response?.data?.error || "Registration failed");
+      toast.error(error?.response?.data?.error || error?.message || "Registration failed");
     } finally {
       setIsloading(false);
     }
@@ -83,6 +89,14 @@ export default function LoginPage() {
         email: form.email,
         password: form.password,
       });
+      try {
+        await signInWithEmailAndPassword(auth, form.email, form.password);
+      } catch {
+        try {
+          const cred = await createUserWithEmailAndPassword(auth, form.email, form.password);
+          await updateProfile(cred.user, { displayName: res.data.user.name });
+        } catch {}
+      }
       dispatch(
         login({
           uid: res.data.user.email,
@@ -94,7 +108,7 @@ export default function LoginPage() {
       toast.success("Logged in successfully");
       goHome();
     } catch (error: any) {
-      toast.error(error?.response?.data?.error || "Login failed");
+      toast.error(error?.response?.data?.error || error?.message || "Login failed");
     } finally {
       setIsloading(false);
     }
