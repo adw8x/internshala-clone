@@ -548,6 +548,14 @@ export default function LoginPage() {
                       {isloading ? "Signing in..." : "Sign in as Admin"}
                     </button>
                   </div>
+                <div className="text-sm text-center">
+                    <Link
+                      href="/forgot-password"
+                      className="font-medium text-blue-600 hover:text-blue-700"
+                    >
+                      Forgot password?
+                    </Link>
+                  </div>
                 </form>
               )}
 
