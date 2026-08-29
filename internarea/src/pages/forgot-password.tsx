@@ -130,21 +130,21 @@ export default function ForgotPasswordPage() {
             </div>
           </form>
 
-          {message && (
-            <div className="mt-6 p-4 bg-green-50 border border-green-200 rounded-md">
-              <p className="text-sm text-green-800">{message}</p>
-              {fallbackLink && (
-                <div className="mt-3">
-                  <a
-                    href={fallbackLink}
-                    className="text-blue-600 font-medium text-sm break-all hover:underline"
-                  >
-                    {fallbackLink}
-                  </a>
+{message && (
+                <div className="mt-6 p-4 bg-green-50 border border-green-200 rounded-md">
+                  <p className="text-sm text-green-800">{message}</p>
+                  {fallbackLink && (
+                    <div className="mt-4 text-center">
+                      <a
+                        href={fallbackLink}
+                        className="inline-flex items-center justify-center gap-2 px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-md hover:bg-blue-700"
+                      >
+                        Reset Password
+                      </a>
+                    </div>
+                  )}
                 </div>
               )}
-            </div>
-          )}
 
           <div className="mt-6 text-center">
             <Link
