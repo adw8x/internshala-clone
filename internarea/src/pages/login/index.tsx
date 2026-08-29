@@ -1,4 +1,5 @@
 import { Lock, User } from "lucide-react";
+import Link from "next/link";
 import { useRouter } from "next/router";
 import React, { useEffect, useState } from "react";
 import { useDispatch } from "react-redux";
@@ -27,6 +28,7 @@ export default function LoginPage() {
     email: "",
     password: "",
     username: "",
+    phone: "",
   });
   const [isloading, setIsloading] = useState(false);
   const [adminSubTab, setAdminSubTab] = useState<"signin" | "create">("create");
@@ -54,6 +56,7 @@ export default function LoginPage() {
         name: form.name,
         email: form.email,
         password: form.password,
+        phone: form.phone,
         role: "user",
       });
       try {
@@ -385,6 +388,23 @@ export default function LoginPage() {
                     </div>
                   </div>
                   <div>
+                    <label htmlFor="reg-phone" className="block text-sm font-medium text-gray-700">
+                      Phone Number{" "}
+                      <span className="text-gray-400 font-normal">(optional)</span>
+                    </label>
+                    <div className="mt-1 relative rounded-md shadow-sm">
+                      <input
+                        id="reg-phone"
+                        name="phone"
+                        type="tel"
+                        value={form.phone}
+                        onChange={handleChange}
+                        className="block w-full text-black px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+                        placeholder="Used for password reset via SMS"
+                      />
+                    </div>
+                  </div>
+                  <div>
                     <button type="submit" disabled={isloading} className={submitBtn}>
                       {isloading ? "Registering..." : "Create Account"}
                     </button>
@@ -439,6 +459,14 @@ export default function LoginPage() {
                     <button type="submit" disabled={isloading} className={submitBtn}>
                       {isloading ? "Signing in..." : "Sign in"}
                     </button>
+                  </div>
+                  <div className="text-sm text-center">
+                    <Link
+                      href="/forgot-password"
+                      className="font-medium text-blue-600 hover:text-blue-700"
+                    >
+                      Forgot password?
+                    </Link>
                   </div>
                 </form>
               )}

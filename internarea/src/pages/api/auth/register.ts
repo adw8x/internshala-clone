@@ -8,13 +8,18 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
   try {
     await connectToDatabase();
-    const { name, email, password, role } = req.body;
+    const { name, email, password, role, phone } = req.body;
 
     if (!email || !password) {
       return res.status(400).json({ error: "Email and password are required" });
     }
     if (String(password).length < 6) {
       return res.status(400).json({ error: "Password must be at least 6 characters" });
+    }
+
+    const cleanPhone = phone ? String(phone).replace(/\D/g, "") : "";
+    if (cleanPhone && (cleanPhone.length < 10 || cleanPhone.length > 15)) {
+      return res.status(400).json({ error: "Invalid phone number" });
     }
 
     const existing = await Account.findOne({ email: String(email).toLowerCase() });
@@ -31,6 +36,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     const passwordHash = await bcrypt.hash(String(password), 10);
     const account = await Account.create({
       email: String(email).toLowerCase(),
+      phone: cleanPhone || undefined,
       name: name || String(email).split("@")[0],
       passwordHash,
       role: role === "admin" ? "admin" : "user",
