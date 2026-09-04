@@ -1,6 +1,6 @@
 import { logout, selectuser } from "@/Feature/Userslice";
 import { clearAdmin } from "@/lib/auth";
-import { ExternalLink, Mail, Trash2, User, Users, X } from "lucide-react";
+import { ExternalLink, Mail, Trash2, User, X } from "lucide-react";
 import { signOut } from "firebase/auth";
 import { auth } from "@/firebase/firebase";
 import Link from "next/link";

@@ -3,10 +3,10 @@
   "version": "1.0.0",
   "private": true,
   "scripts": {
-    "dev": "pnpm dev",
-    "build": "pnpm build",
-    "start": "pnpm start",
-    "lint": "pnpm lint"
+    "dev": "npm --prefix internarea run dev",
+    "build": "npm --prefix internarea run build",
+    "start": "npm --prefix internarea run start",
+    "lint": "npm --prefix internarea run lint"
   },
   "dependencies": {},
   "devDependencies": {}

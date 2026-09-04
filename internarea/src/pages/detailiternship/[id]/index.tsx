@@ -90,6 +90,15 @@ const index = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [coverLetter, setCoverLetter] = useState("");
   const user=useSelector(selectuser)
+  const [subStatus, setSubStatus] = useState<any>(null);
+
+  useEffect(() => {
+    if (!user?.email) return;
+    api
+      .get("/subscription/status", { params: { email: user.email } })
+      .then((res) => setSubStatus(res.data))
+      .catch(() => {});
+  }, [user?.email]);
   if (!internshipData) {
     return (
       <div className="min-h-screen flex items-center justify-center">
@@ -118,9 +127,14 @@ const index = () => {
       await api.post("/application",applicationdata)
       toast.success("Application submit successfully")
       router.push('/internship')
-    } catch (error) {
-      console.error(error)
-      toast.error("Failed to submit application")
+    } catch (error: any) {
+      const msg = error?.response?.data?.error;
+      if (msg) {
+        toast.error(msg);
+      } else {
+        console.error(error)
+        toast.error("Failed to submit application")
+      }
     }
   }
   return (
@@ -227,6 +241,27 @@ const index = () => {
               </div>
             </div>
             <div className="p-6 space-y-6">
+              {/* Subscription status banner */}
+              {subStatus && (
+                <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 text-sm">
+                  <div className="flex items-center justify-between mb-1">
+                    <span className="text-blue-800 font-medium">
+                      {(subStatus.plans || []).find((p: any) => p.id === subStatus.planId)?.name || "Free"} Plan
+                    </span>
+                    <Link
+                      href="/plans"
+                      className="text-blue-600 hover:underline font-medium"
+                    >
+                      Upgrade
+                    </Link>
+                  </div>
+                  <div className="text-blue-700">
+                    {subStatus.remaining === -1
+                      ? "Unlimited applications included"
+                      : `You have ${subStatus.remaining} application(s) left this month`}
+                  </div>
+                </div>
+              )}
               {/* Resume Section */}
               <div>
                 <h3 className="text-lg font-semibold text-gray-900 mb-2">
@@ -276,11 +311,19 @@ const index = () => {
                   ))}
                 </div>
               </div>
-              <div className="flex justify-end pt-4">
+              <div className="flex justify-end gap-3 pt-4">
                 {user ? (
-                  <button className="bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700" onClick={handlesubmitapplication}>
-                    Submit Application
-                  </button>
+                  <>
+                    <Link
+                      href="/plans"
+                      className="bg-white border border-blue-600 text-blue-600 px-6 py-2 rounded-lg hover:bg-blue-50"
+                    >
+                      View Plans
+                    </Link>
+                    <button className="bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700" onClick={handlesubmitapplication}>
+                      Submit Application
+                    </button>
+                  </>
                 ) : (
                   <Link
                     href={`/`}

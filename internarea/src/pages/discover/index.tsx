@@ -256,8 +256,31 @@ export default function DiscoverPage() {
                           <span>Request Sent</span>
                         </div>
                       ) : u.connectionStatus === "received" ? (
-                        <div className="w-full flex items-center justify-center space-x-2 px-4 py-2 bg-yellow-50 text-yellow-700 text-sm font-medium rounded-lg">
-                          <span>Request Received</span>
+                        <div className="w-full flex items-center justify-center space-x-2">
+                          <button
+                            onClick={() =>
+                              handleAccept(
+                                pendingRequests.find(
+                                  (r) => r.sender._id === u._id
+                                )?._id as string
+                              )
+                            }
+                            className="flex-1 px-4 py-2 bg-green-600 text-white text-sm font-medium rounded-lg hover:bg-green-700 transition-colors"
+                          >
+                            Accept
+                          </button>
+                          <button
+                            onClick={() =>
+                              handleReject(
+                                pendingRequests.find(
+                                  (r) => r.sender._id === u._id
+                                )?._id as string
+                              )
+                            }
+                            className="flex-1 px-4 py-2 bg-red-100 text-red-700 text-sm font-medium rounded-lg hover:bg-red-200 transition-colors"
+                          >
+                            Reject
+                          </button>
                         </div>
                       ) : (
                         <div className="w-full flex items-center justify-center space-x-2 px-4 py-2 bg-green-50 text-green-700 text-sm font-medium rounded-lg">

@@ -1,5 +1,7 @@
 # Internshala Clone
 
+<!-- test comment added in build mode -->
+
 A full-stack web application for managing internships and jobs.
 
 ## Frontend (Internarea)
@@ -18,7 +20,7 @@ The frontend is built with Next.js (React) and features:
 - Search and filtering
 
 ### Tech Stack
-- Next.js 15.2.1
+- Next.js 16 (^16.3.3)
 - React 19
 - TypeScript
 - Redux Toolkit
@@ -54,24 +56,47 @@ The backend is a Node.js/Express application with MongoDB integration.
 
 ## API Endpoints
 
+The application is served by the Next.js API routes in `internarea/src/pages/api/` (the Express backend under `backend/` is a legacy, separate deployment).
+
 ### Jobs
 - `GET /api/job` - Get all jobs
-- `POST /api/job` - Create a new job
+- `POST /api/job` - Create a new job (admin)
 - `GET /api/job/:id` - Get job by ID
 
 ### Internships
 - `GET /api/internship` - Get all internships
-- `POST /api/internship` - Create a new internship
+- `POST /api/internship` - Create a new internship (admin)
 - `GET /api/internship/:id` - Get internship by ID
 
 ### Applications
-- `GET /api/application` - Get all applications
+- `GET /api/application` - Get all applications (admin)
 - `POST /api/application` - Create a new application
 - `GET /api/application/:id` - Get application by ID
-- `PUT /api/application/:id` - Update application status
+- `PUT /api/application/:id` - Update application status (admin)
 
-### Admin
+### Auth
+- `POST /api/auth/register` - Register a new user
+- `POST /api/auth/login` - User login
+- `POST /api/auth/google` - Google sign-in
 - `POST /api/admin/adminlogin` - Admin login
+- `POST /api/admin/register` - Create admin account
+
+### Public Space
+- `GET /api/publicspace` - List posts
+- `POST /api/publicspace` - Create a post
+- `GET /api/publicspace/:postId/comments` - List comments
+- `POST /api/publicspace/:postId/comments` - Add a comment
+- `POST /api/publicspace/:postId/like` - Toggle like
+- `POST /api/publicspace/:postId/share` - Share a post
+- `POST /api/publicspace/upload` - Upload media
+- `DELETE /api/publicspace/:postId` - Delete a post
+
+### Connections
+- `GET /api/connection/users` - List suggested users
+- `POST /api/connection/send` - Send a connection request
+- `POST /api/connection/accept` - Accept a connection request
+- `POST /api/connection/reject` - Reject a connection request
+- `POST /api/connection/list` - List connections
 
 ## Development
 
@@ -88,16 +113,18 @@ The backend is a Node.js/Express application with MongoDB integration.
 
 ### Environment Variables
 
-Create a `.env` file in the backend directory:
+Create a `.env.local` file in the `internarea` directory:
 ```
-DATABASE_URL=mongodb://127.0.0.1:27017/internshala
+NEXT_PUBLIC_API_BASE_URL=/api
 ```
+
+`DATABASE_URL` (MongoDB Atlas connection string) is set via the Vercel environment for the deployed `internarea` project. Set the same variable locally (e.g. in `internarea/.env.local`) to run the Next.js API routes against MongoDB in development. The `DATABASE_URL` in `backend/.env` is used only by the legacy Express server.
 
 ### Testing
 To test the application locally:
 1. Start MongoDB
-2. Start the backend server (`npm run dev` in backend/)
-3. Start the frontend development server (`npm run dev` in internarea/)
+2. Provide `DATABASE_URL` in `internarea/.env.local`
+3. Start the frontend development server from the repo root: `npm run dev` (or `npm --prefix internarea run dev`)
 4. Visit `http://localhost:3000` in your browser
 
 ## Project Structure
