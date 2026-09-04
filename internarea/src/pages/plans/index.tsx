@@ -46,6 +46,27 @@ const PlansPage = () => {
   const router = useRouter();
   const [status, setStatus] = useState<SubscriptionStatus | null>(null);
   const [payingPlan, setPayingPlan] = useState<string | null>(null);
+  const [verifyOrderId, setVerifyOrderId] = useState("");
+  const [verifying, setVerifying] = useState(false);
+  const [verifyResult, setVerifyResult] = useState<any>(null);
+  const [verifyError, setVerifyError] = useState<string | null>(null);
+
+  const handleVerify = async () => {
+    if (!verifyOrderId.trim()) return;
+    setVerifying(true);
+    setVerifyResult(null);
+    setVerifyError(null);
+    try {
+      const res = await api.post("/payment/verify-order", {
+        razorpay_order_id: verifyOrderId.trim(),
+      });
+      setVerifyResult(res.data);
+    } catch (err: any) {
+      setVerifyError(err?.response?.data?.error || "Verification failed. Please try again.");
+    } finally {
+      setVerifying(false);
+    }
+  };
 
   const loadStatus = () => {
     if (!user?.email) return;
@@ -212,6 +233,81 @@ const PlansPage = () => {
               </div>
             );
           })}
+        </div>
+
+        {/* Payment verification */}
+        <div className="max-w-xl mx-auto mt-10 bg-white rounded-lg shadow p-6">
+          <h2 className="text-lg font-bold text-gray-900 mb-1">Verify a Payment</h2>
+          <p className="text-sm text-gray-600 mb-4">
+            Enter a Razorpay order id to confirm a completed transaction against the payment
+            gateway.
+          </p>
+          <div className="flex gap-2">
+            <input
+              type="text"
+              value={verifyOrderId}
+              onChange={(e) => setVerifyOrderId(e.target.value)}
+              placeholder="e.g. order_TY32P2t6VdwdWS"
+              className="flex-1 border border-gray-300 rounded-lg px-3 py-2 text-sm"
+            />
+            <button
+              onClick={handleVerify}
+              disabled={verifying || !verifyOrderId.trim()}
+              className="bg-gray-800 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-gray-700 disabled:opacity-50"
+            >
+              {verifying ? "Verifying..." : "Verify"}
+            </button>
+          </div>
+          {verifyError && (
+            <div className="mt-4 bg-red-50 border border-red-200 text-red-700 rounded-lg px-4 py-3 text-sm">
+              {verifyError}
+            </div>
+          )}
+          {verifyResult && (
+            <div
+              className={`mt-4 rounded-lg border px-4 py-3 text-sm ${
+                verifyResult.verified
+                  ? "bg-green-50 border-green-200 text-green-800"
+                  : "bg-yellow-50 border-yellow-200 text-yellow-800"
+              }`}
+            >
+              <div className="flex items-center gap-2 font-semibold mb-2">
+                {verifyResult.verified
+                  ? "✓ Verified — payment completed"
+                  : "Payment not yet completed"}
+              </div>
+              <div className="space-y-1 text-gray-700">
+                <div>
+                  Order: <span className="font-mono">{verifyResult.orderId}</span>
+                </div>
+                <div>Order status: {verifyResult.orderStatus}</div>
+                <div>
+                  Amount: ₹{verifyResult.amountINR} {verifyResult.currency}
+                </div>
+                {verifyResult.payment && (
+                  <>
+                    <div>
+                      Payment id: <span className="font-mono">{verifyResult.payment.id}</span>
+                    </div>
+                    <div>Payment status: {verifyResult.payment.status}</div>
+                    <div>Method: {verifyResult.payment.method}</div>
+                    {verifyResult.payment.card && (
+                      <div>
+                        Card: {verifyResult.payment.card.network} ••••{" "}
+                        {verifyResult.payment.card.last4}
+                      </div>
+                    )}
+                    {verifyResult.paidAt && (
+                      <div>
+                        Paid at:{" "}
+                        {new Date(verifyResult.paidAt * 1000).toLocaleString("en-IN")}
+                      </div>
+                    )}
+                  </>
+                )}
+              </div>
+            </div>
+          )}
         </div>
 
         <div className="text-center mt-10">
