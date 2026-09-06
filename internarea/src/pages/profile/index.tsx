@@ -1,6 +1,6 @@
 import { logout, selectuser } from "@/Feature/Userslice";
 import { clearAdmin } from "@/lib/auth";
-import { ExternalLink, Mail, Trash2, User, X } from "lucide-react";
+import { ExternalLink, FileText, Mail, Trash2, User, X } from "lucide-react";
 import { signOut } from "firebase/auth";
 import { auth } from "@/firebase/firebase";
 import Link from "next/link";
@@ -8,6 +8,15 @@ import { useRouter } from "next/router";
 import React, { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import api, { authHeaders } from "@/lib/api";
+
+interface ProfileResume {
+  _id: string;
+  name: string;
+  status: string;
+  amountINR: number;
+  createdAt: string;
+  paidAt: string | null;
+}
 
 const index = () => {
   const user = useSelector(selectuser);
@@ -17,6 +26,7 @@ const index = () => {
   const [friendCount, setFriendCount] = useState(0);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [deleting, setDeleting] = useState(false);
+  const [resumes, setResumes] = useState<ProfileResume[]>([]);
 
   useEffect(() => {
     if (!user?.name) return;
@@ -46,6 +56,14 @@ const index = () => {
       .then((res) => setFriendCount(res.data.connections.length))
       .catch(() => {});
   }, [user]);
+
+  useEffect(() => {
+    if (!user?.email) return;
+    api
+      .get("/resume", { params: { email: user.email } })
+      .then((res) => setResumes(res.data.resumes || []))
+      .catch(() => {});
+  }, [user?.email]);
 
   const handleDeleteAccount = async () => {
     setDeleting(true);
@@ -121,6 +139,52 @@ const index = () => {
                     Connections
                   </p>
                 </div>
+              </div>
+
+              {/* Resumes */}
+              <div className="bg-blue-50 rounded-xl p-5">
+                <div className="flex items-center justify-between mb-3">
+                  <div className="flex items-center gap-2">
+                    <FileText className="h-5 w-5 text-blue-600" />
+                    <h3 className="font-semibold text-gray-900">My Resumes</h3>
+                  </div>
+                  <Link
+                    href="/resume"
+                    className="text-blue-600 hover:underline text-sm font-medium"
+                  >
+                    Create Resume
+                  </Link>
+                </div>
+                {resumes.length === 0 ? (
+                  <p className="text-gray-600 text-sm">
+                    No resumes yet. Create a professional resume to auto-attach to
+                    your internship applications.
+                  </p>
+                ) : (
+                  <div className="space-y-2">
+                    {resumes.slice(0, 5).map((r) => (
+                      <div
+                        key={r._id}
+                        className="bg-white rounded-lg px-4 py-2.5 flex items-center justify-between"
+                      >
+                        <div>
+                          <p className="font-medium text-gray-900 text-sm">{r.name}</p>
+                          <p className="text-xs text-gray-500">
+                            {r.status === "paid" ? "Ready · Auto-attached to applications" : "Awaiting payment"} · ₹{r.amountINR}
+                          </p>
+                        </div>
+                        {r.status === "paid" && (
+                          <Link
+                            href={`/resume/${r._id}`}
+                            className="text-blue-600 hover:underline text-sm font-medium"
+                          >
+                            View
+                          </Link>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                )}
               </div>
 
               {/* Actions */}

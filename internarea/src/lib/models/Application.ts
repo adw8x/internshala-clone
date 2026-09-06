@@ -13,6 +13,7 @@ const applicationSchema = new mongoose.Schema({
   },
   availability: String,
   Application: Object,
+  resume: Object,
 });
 
 export default mongoose.models.Application || mongoose.model("Application", applicationSchema);
