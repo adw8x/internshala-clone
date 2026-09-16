@@ -6,6 +6,7 @@ import { useSelector } from "react-redux";
 import { useRouter } from "next/router";
 import { toast } from "react-toastify";
 import api from "@/lib/api";
+import { useLanguage } from "@/lib/i18n";
 
 interface PlanData {
   id: string;
@@ -44,6 +45,7 @@ const loadRazorpayScript = (src: string): Promise<boolean> => {
 const PlansPage = () => {
   const user = useSelector(selectuser);
   const router = useRouter();
+  const { t } = useLanguage();
   const [status, setStatus] = useState<SubscriptionStatus | null>(null);
   const [payingPlan, setPayingPlan] = useState<string | null>(null);
   const [verifyOrderId, setVerifyOrderId] = useState("");
@@ -62,7 +64,7 @@ const PlansPage = () => {
       });
       setVerifyResult(res.data);
     } catch (err: any) {
-      setVerifyError(err?.response?.data?.error || "Verification failed. Please try again.");
+      setVerifyError(err?.response?.data?.error || t("plans.verificationFailed"));
     } finally {
       setVerifying(false);
     }
@@ -85,7 +87,7 @@ const PlansPage = () => {
 
   const handleSubscribe = async (planId: string, plan: PlanData) => {
     if (!user?.email) {
-      toast.error("Please sign in to subscribe");
+      toast.error(t("plans.signInRequired"));
       router.push("/");
       return;
     }
@@ -93,7 +95,7 @@ const PlansPage = () => {
     try {
       const loaded = await loadRazorpayScript("https://checkout.razorpay.com/v1/checkout.js");
       if (!loaded) {
-        toast.error("Could not load payment gateway. Please try again.");
+        toast.error(t("plans.gatewayFailed"));
         return;
       }
 
@@ -123,10 +125,10 @@ const PlansPage = () => {
               email: user.email,
               name: user.name,
             });
-            toast.success(verifyRes.data.message || "Payment successful");
+            toast.success(verifyRes.data.message || t("plans.paymentSuccessful"));
             loadStatus();
           } catch (verifyErr: any) {
-            toast.error(verifyErr?.response?.data?.error || "Payment not verified");
+            toast.error(verifyErr?.response?.data?.error || t("plans.paymentNotVerified"));
           }
         },
         modal: {
@@ -135,7 +137,7 @@ const PlansPage = () => {
       });
 
       razorpay.on("payment.failed", (response: any) => {
-        toast.error("Payment failed. Please try again.");
+        toast.error(t("plans.paymentFailed"));
         setPayingPlan(null);
       });
 
@@ -143,7 +145,7 @@ const PlansPage = () => {
     } catch (err: any) {
       const msg =
         err?.response?.data?.error ||
-        "Payment is currently unavailable. Payments are allowed only between 10:00 AM and 11:00 AM IST.";
+        t("plans.paymentUnavailable");
       toast.error(msg);
       setPayingPlan(null);
     }
@@ -153,34 +155,34 @@ const PlansPage = () => {
     <div className="min-h-screen bg-gray-50 py-12">
       <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="text-center mb-4">
-          <h1 className="text-3xl font-bold text-gray-900">Subscription Plans</h1>
+          <h1 className="text-3xl font-bold text-gray-900">{t("plans.title")}</h1>
           <p className="mt-2 text-gray-600">
-            Choose a plan to manage your internship applications
+            {t("plans.subtitle")}
           </p>
         </div>
 
         {/* Payment window notice */}
         <div className="max-w-xl mx-auto mb-10 px-4 py-3 bg-yellow-50 border border-yellow-200 rounded-lg text-yellow-800 text-sm text-center">
-          Payments are only accepted between <strong>10:00 AM and 11:00 AM IST</strong>. Attempts outside this window will be blocked.
+          {t("plans.paymentWindowNotice")}
         </div>
 
         {/* Current subscription status */}
         {status && currentPlan && (
           <div className="max-w-xl mx-auto mb-10 bg-white rounded-lg shadow p-4 text-sm">
             <div className="flex items-center justify-between mb-1">
-              <span className="text-gray-600">Current plan</span>
-              <span className="font-semibold text-blue-600">{currentPlan.name} Plan</span>
+              <span className="text-gray-600">{t("plans.currentPlan")}</span>
+              <span className="font-semibold text-blue-600">{t("plans.planName", { name: currentPlan.name })}</span>
             </div>
             <div className="flex items-center justify-between mb-1">
-              <span className="text-gray-600">Applications used</span>
+              <span className="text-gray-600">{t("plans.applicationsUsed")}</span>
               <span className="font-semibold text-gray-800">
                 {status.remaining === -1
-                  ? "Unlimited"
+                  ? t("plans.unlimited")
                   : `${status.applicationsUsed} / ${status.applicationsPerMonth}`}
               </span>
             </div>
             <div className="flex items-center justify-between">
-              <span className="text-gray-600">Valid until</span>
+              <span className="text-gray-600">{t("plans.validUntil")}</span>
               <span className="font-semibold text-gray-800">
                 {new Date(status.periodEnd).toLocaleDateString("en-IN")}
               </span>
@@ -207,7 +209,7 @@ const PlansPage = () => {
                 </div>
                 <p className="text-3xl font-bold text-gray-900 mb-2">
                   ₹{plan.monthlyPriceINR}
-                  <span className="text-sm font-normal text-gray-500">/month</span>
+                  <span className="text-sm font-normal text-gray-500">{t("plans.perMonth")}</span>
                 </p>
                 <p className="text-sm text-gray-600 mb-4 flex items-center gap-1">
                   <Check className="h-4 w-4 text-green-500" />
@@ -215,7 +217,7 @@ const PlansPage = () => {
                 </p>
                 {isCurrent ? (
                   <div className="mt-auto bg-blue-50 text-blue-700 text-center py-2 rounded-lg font-medium">
-                    Current Plan
+                    {t("plans.currentPlanBadge")}
                   </div>
                 ) : (
                   <button
@@ -227,7 +229,7 @@ const PlansPage = () => {
                         : "bg-blue-600 text-white hover:bg-blue-700"
                     } disabled:opacity-50`}
                   >
-                    {payingPlan === plan.id ? "Processing..." : isFree ? "Default" : "Subscribe"}
+                    {payingPlan === plan.id ? t("plans.processing") : isFree ? t("plans.defaultPlan") : t("plans.subscribe")}
                   </button>
                 )}
               </div>
@@ -237,17 +239,16 @@ const PlansPage = () => {
 
         {/* Payment verification */}
         <div className="max-w-xl mx-auto mt-10 bg-white rounded-lg shadow p-6">
-          <h2 className="text-lg font-bold text-gray-900 mb-1">Verify a Payment</h2>
+          <h2 className="text-lg font-bold text-gray-900 mb-1">{t("plans.verifyPayment")}</h2>
           <p className="text-sm text-gray-600 mb-4">
-            Enter a Razorpay order id to confirm a completed transaction against the payment
-            gateway.
+            {t("plans.verifyDescription")}
           </p>
           <div className="flex gap-2">
             <input
               type="text"
               value={verifyOrderId}
               onChange={(e) => setVerifyOrderId(e.target.value)}
-              placeholder="e.g. order_TY32P2t6VdwdWS"
+              placeholder={t("plans.verifyPlaceholder")}
               className="flex-1 border border-gray-300 rounded-lg px-3 py-2 text-sm"
             />
             <button
@@ -255,7 +256,7 @@ const PlansPage = () => {
               disabled={verifying || !verifyOrderId.trim()}
               className="bg-gray-800 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-gray-700 disabled:opacity-50"
             >
-              {verifying ? "Verifying..." : "Verify"}
+              {verifying ? t("plans.verifying") : t("plans.verify")}
             </button>
           </div>
           {verifyError && (
@@ -273,34 +274,37 @@ const PlansPage = () => {
             >
               <div className="flex items-center gap-2 font-semibold mb-2">
                 {verifyResult.verified
-                  ? "✓ Verified — payment completed"
-                  : "Payment not yet completed"}
+                  ? t("plans.verified")
+                  : t("plans.notCompleted")}
               </div>
               <div className="space-y-1 text-gray-700">
                 <div>
-                  Order: <span className="font-mono">{verifyResult.orderId}</span>
+                  {t("plans.order", { orderId: verifyResult.orderId })}
                 </div>
-                <div>Order status: {verifyResult.orderStatus}</div>
+                <div>{t("plans.orderStatus", { orderStatus: verifyResult.orderStatus })}</div>
                 <div>
-                  Amount: ₹{verifyResult.amountINR} {verifyResult.currency}
+                  {t("plans.amount", { amount: verifyResult.amountINR, currency: verifyResult.currency })}
                 </div>
                 {verifyResult.payment && (
                   <>
                     <div>
-                      Payment id: <span className="font-mono">{verifyResult.payment.id}</span>
+                      {t("plans.paymentId", { id: verifyResult.payment.id })}
                     </div>
-                    <div>Payment status: {verifyResult.payment.status}</div>
-                    <div>Method: {verifyResult.payment.method}</div>
+                    <div>{t("plans.paymentStatus", { status: verifyResult.payment.status })}</div>
+                    <div>{t("plans.method", { method: verifyResult.payment.method })}</div>
                     {verifyResult.payment.card && (
                       <div>
-                        Card: {verifyResult.payment.card.network} ••••{" "}
-                        {verifyResult.payment.card.last4}
+                        {t("plans.card", {
+                          network: verifyResult.payment.card.network,
+                          last4: verifyResult.payment.card.last4,
+                        })}
                       </div>
                     )}
                     {verifyResult.paidAt && (
                       <div>
-                        Paid at:{" "}
-                        {new Date(verifyResult.paidAt * 1000).toLocaleString("en-IN")}
+                        {t("plans.paidAt", {
+                          date: new Date(verifyResult.paidAt * 1000).toLocaleString("en-IN"),
+                        })}
                       </div>
                     )}
                   </>
@@ -312,7 +316,7 @@ const PlansPage = () => {
 
         <div className="text-center mt-10">
           <Link href="/" className="text-blue-600 hover:text-blue-700">
-            ← Back to home
+            {t("plans.backHome")}
           </Link>
         </div>
       </div>

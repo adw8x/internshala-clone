@@ -3,6 +3,7 @@ import React, { useState } from "react";
 import api, { authHeaders } from "@/lib/api";
 import { useSelector } from "react-redux";
 import { selectuser } from "@/Feature/Userslice";
+import { useLanguage } from "@/lib/i18n";
 
 interface Post {
   _id: string;
@@ -45,6 +46,7 @@ interface PostCardProps {
 
 export default function PostCard({ post }: PostCardProps) {
   const user = useSelector(selectuser);
+  const { t } = useLanguage();
   const currentUserId = user?.uid || "";
   const [isLiked, setIsLiked] = useState(
     post.likes?.some((like) => like.userId === currentUserId) || false
@@ -65,7 +67,7 @@ export default function PostCard({ post }: PostCardProps) {
     );
 
     if (diffInHours < 24) {
-      return `${diffInHours}h ago`;
+      return t("postCard.hoursAgo", { hours: diffInHours });
     }
     return date.toLocaleDateString("en-US", {
       month: "short",
@@ -118,7 +120,7 @@ export default function PostCard({ post }: PostCardProps) {
           ...comments,
           {
             ...newComment,
-            author: { _id: currentUserId, name: user?.name || "You" },
+            author: { _id: currentUserId, name: user?.name || t("postCard.you") },
           },
         ]);
       }
@@ -168,7 +170,7 @@ export default function PostCard({ post }: PostCardProps) {
             {author.avatar || author.photo ? (
               <img
                 src={author.avatar || author.photo}
-                alt={author.name || "user"}
+                alt={author.name || t("postCard.userAlt")}
                 className="w-10 h-10 rounded-full object-cover"
               />
             ) : (
@@ -179,7 +181,7 @@ export default function PostCard({ post }: PostCardProps) {
           </div>
           <div>
             <h3 className="font-semibold text-gray-900 dark:text-gray-100">
-              {author.name || "Unknown User"}
+              {author.name || t("postCard.unknownUser")}
             </h3>
             <p className="text-sm text-gray-500 dark:text-gray-400">
               {formatDate(post.createdAt)}
@@ -200,7 +202,7 @@ export default function PostCard({ post }: PostCardProps) {
                 {isImageUrl(mediaUrl) ? (
                   <img
                     src={mediaUrl}
-                    alt={`Media ${index + 1}`}
+                    alt={t("postCard.mediaAlt", { index: index + 1 })}
                     className="h-48 rounded-lg object-cover"
                   />
                 ) : (
@@ -289,13 +291,13 @@ export default function PostCard({ post }: PostCardProps) {
       {showComments && (
         <div className="mt-4 pt-4 border-t border-gray-200 dark:border-gray-700">
           <h4 className="text-sm font-semibold text-gray-900 dark:text-gray-100 mb-3">
-            Comments ({commentsCount})
+            {t("postCard.commentsHeading", { count: commentsCount })}
           </h4>
 
           {/* Add Comment Input */}
           <div className="mb-3">
             <textarea
-              placeholder="Add a comment..."
+              placeholder={t("postCard.commentPlaceholder")}
               value={commentText}
               onChange={(e) => setCommentText(e.target.value)}
               className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-gray-100"
@@ -307,7 +309,7 @@ export default function PostCard({ post }: PostCardProps) {
               className="mt-2 px-4 py-1 bg-blue-600 text-white text-sm rounded-lg hover:bg-blue-700 disabled:bg-gray-400"
               disabled={loading || !commentText.trim()}
             >
-              {loading ? "Posting..." : "Post Comment"}
+              {loading ? t("postCard.commentPosting") : t("postCard.postComment")}
             </button>
           </div>
 
@@ -315,7 +317,7 @@ export default function PostCard({ post }: PostCardProps) {
           <div className="space-y-3">
             {comments.length === 0 && (
               <div className="text-sm text-gray-500 dark:text-gray-400 italic">
-                No comments yet. Be the first to comment!
+                {t("postCard.noComments")}
               </div>
             )}
             {comments.map((comment) => (
@@ -331,7 +333,7 @@ export default function PostCard({ post }: PostCardProps) {
                 <div>
                   <div className="flex items-center space-x-2">
                     <span className="text-sm font-medium text-gray-900 dark:text-gray-100">
-                      {comment.author?.name || comment.user?.name || "Unknown User"}
+                      {comment.author?.name || comment.user?.name || t("postCard.unknownUser")}
                     </span>
                   </div>
                   <p className="text-sm text-gray-700 dark:text-gray-300">

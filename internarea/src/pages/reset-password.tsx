@@ -4,11 +4,13 @@ import React, { useEffect, useState } from "react";
 import { toast } from "react-toastify";
 import api from "@/lib/api";
 import { generatePassword } from "@/lib/password";
+import { useLanguage } from "@/lib/i18n";
 
 type Status = "loading" | "valid" | "invalid" | "success";
 
 export default function ResetPasswordPage() {
   const router = useRouter();
+  const { t } = useLanguage();
   const token = (router.query.token as string) || "";
   const [status, setStatus] = useState<Status>("loading");
   const [name, setName] = useState("");
@@ -20,7 +22,7 @@ export default function ResetPasswordPage() {
   useEffect(() => {
     if (!token) {
       setStatus("invalid");
-      setError("This reset link is invalid or has expired.");
+      setError(t("resetPassword.invalidLink"));
       return;
     }
     api
@@ -31,12 +33,12 @@ export default function ResetPasswordPage() {
           setStatus("valid");
         } else {
           setStatus("invalid");
-          setError(res.data.error || "This reset link is invalid or has expired.");
+          setError(res.data.error || t("resetPassword.invalidLink"));
         }
       })
       .catch((err) => {
         setStatus("invalid");
-        setError(err?.response?.data?.error || "This reset link is invalid or has expired.");
+        setError(err?.response?.data?.error || t("resetPassword.invalidLink"));
       });
   }, [token]);
 
@@ -49,20 +51,20 @@ export default function ResetPasswordPage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!password || String(password).length < 6) {
-      toast.error("Password must be at least 6 characters");
+      toast.error(t("resetPassword.minLength"));
       return;
     }
     if (password !== confirm) {
-      toast.error("Passwords do not match");
+      toast.error(t("resetPassword.mismatch"));
       return;
     }
     setSubmitting(true);
     try {
       await api.post("/auth/reset-password", { token, password });
       setStatus("success");
-      toast.success("Password updated successfully");
+      toast.success(t("resetPassword.updated"));
     } catch (error: any) {
-      toast.error(error?.response?.data?.error || "Failed to update password");
+      toast.error(error?.response?.data?.error || t("resetPassword.updateFailed"));
     } finally {
       setSubmitting(false);
     }
@@ -77,7 +79,7 @@ export default function ResetPasswordPage() {
     <div className="min-h-screen bg-gray-50 flex flex-col justify-center py-12 sm:px-6 lg:px-8">
       <div className="sm:mx-auto sm:w-full sm:max-w-md">
         <h2 className="text-center text-3xl font-extrabold text-gray-900">
-          {status === "success" ? "Password Updated" : "Set a New Password"}
+          {status === "success" ? t("resetPassword.updatedTitle") : t("resetPassword.title")}
         </h2>
       </div>
 
@@ -86,7 +88,7 @@ export default function ResetPasswordPage() {
           {status === "loading" && (
             <div className="flex items-center justify-center text-gray-500 py-8">
               <RefreshCw className="h-5 w-5 animate-spin mr-2" />
-              Verifying your link...
+              {t("resetPassword.verifying")}
             </div>
           )}
 
@@ -98,7 +100,7 @@ export default function ResetPasswordPage() {
                 href="/forgot-password"
                 className="inline-block mt-4 text-sm font-medium text-blue-600 hover:text-blue-700"
               >
-                Request a new reset link
+                {t("resetPassword.requestNewLink")}
               </a>
             </div>
           )}
@@ -107,12 +109,12 @@ export default function ResetPasswordPage() {
             <form className="space-y-6" onSubmit={handleSubmit}>
               <div className="flex items-center justify-center gap-2 text-green-600 text-sm">
                 <ShieldCheck className="h-5 w-5" />
-                {name ? `Hi ${name}, your link is valid.` : "Your link is valid."}
+                {name ? t("resetPassword.linkValidWithName", { name }) : t("resetPassword.linkValid")}
               </div>
 
               <div>
                 <label htmlFor="new-password" className="block text-sm font-medium text-gray-700">
-                  New Password
+                  {t("resetPassword.newPassword")}
                 </label>
                 <div className="mt-1 relative rounded-md shadow-sm">
                   <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
@@ -126,14 +128,14 @@ export default function ResetPasswordPage() {
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
                     className={inputCls}
-                    placeholder="At least 6 characters"
+                    placeholder={t("resetPassword.passwordPlaceholder")}
                   />
                 </div>
               </div>
 
               <div>
                 <label htmlFor="confirm-password" className="block text-sm font-medium text-gray-700">
-                  Confirm Password
+                  {t("resetPassword.confirmPassword")}
                 </label>
                 <div className="mt-1 relative rounded-md shadow-sm">
                   <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
@@ -147,7 +149,7 @@ export default function ResetPasswordPage() {
                     value={confirm}
                     onChange={(e) => setConfirm(e.target.value)}
                     className={inputCls}
-                    placeholder="Re-enter your new password"
+                    placeholder={t("resetPassword.confirmPlaceholder")}
                   />
                 </div>
               </div>
@@ -159,17 +161,17 @@ export default function ResetPasswordPage() {
                   className="inline-flex items-center gap-2 text-sm font-medium text-blue-600 hover:text-blue-700"
                 >
                   <RefreshCw className="h-4 w-4" />
-                  Generate a password for me
+                  {t("resetPassword.generate")}
                 </button>
                 <div className="flex items-center text-xs text-gray-400">
                   <KeyRound className="h-3.5 w-3.5 mr-1" />
-                  Letters only (A-Z, a-z)
+                  {t("resetPassword.lettersOnly")}
                 </div>
               </div>
 
               <div>
                 <button type="submit" disabled={submitting} className={submitBtn}>
-                  {submitting ? "Updating..." : "Update Password"}
+                  {submitting ? t("resetPassword.updating") : t("resetPassword.update")}
                 </button>
               </div>
             </form>
@@ -179,14 +181,13 @@ export default function ResetPasswordPage() {
             <div className="text-center">
               <CheckCircle2 className="h-12 w-12 text-green-500 mx-auto mb-4" />
               <p className="text-sm text-gray-600 mb-6">
-                Your password has been reset successfully. You can now sign in
-                with your new password.
+                {t("resetPassword.successMessage")}
               </p>
               <a
                 href="/login?tab=register"
                 className="inline-flex items-center justify-center px-6 py-2.5 bg-blue-600 text-white text-sm font-medium rounded-md hover:bg-blue-700"
               >
-                Sign In
+                {t("resetPassword.signIn")}
               </a>
             </div>
           )}

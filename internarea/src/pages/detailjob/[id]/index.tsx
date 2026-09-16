@@ -16,6 +16,7 @@ import { toast } from "react-toastify";
 import { useSelector } from "react-redux";
 import { selectuser } from "@/Feature/Userslice";
 import api from "@/lib/api";
+import { useLanguage } from "@/lib/i18n";
 // const filteredJobs = [
 //     {
 //       _id: "101",
@@ -117,6 +118,7 @@ import api from "@/lib/api";
 //     },
 //   ];
 const index = () => {
+  const { t } = useLanguage();
   const user=useSelector(selectuser)
   const router = useRouter();
   const { id } = router.query;
@@ -145,11 +147,11 @@ const index = () => {
   }
   const handlesubmitapplication = async () => {
     if (!coverLetter.trim()) {
-      toast.error("please write a cover letter");
+      toast.error(t("detailJob.coverLetterRequired"));
       return;
     }
     if (!availability) {
-      toast.error("please select your availability");
+      toast.error(t("detailJob.availabilityRequired"));
       return;
     }
     try {
@@ -162,11 +164,11 @@ const index = () => {
         availability,
       };
       await api.post("/application", applicationdata);
-      toast.success("Application submit successfully");
+      toast.success(t("detailJob.submitted"));
       router.push("/job");
     } catch (error) {
       console.error(error);
-      toast.error("Failed to submit application");
+      toast.error(t("detailJob.submitFailed"));
     }
   };
   return (
@@ -176,7 +178,7 @@ const index = () => {
         <div className="p-6 border-b">
           <div className="flex items-center space-x-2 text-blue-600 mb-4">
             <ArrowUpRight className="h-5 w-5" />
-            <span className="font-medium">Actively Hiring</span>
+            <span className="font-medium">{t("detailJob.activelyHiring")}</span>
           </div>
           <h1 className="text-3xl font-bold text-gray-900 mb-2">
             {jobdata.title}
@@ -189,7 +191,7 @@ const index = () => {
             </div>
             <div className="flex items-center space-x-2 text-gray-600">
               <DollarSign className="h-5 w-5" />
-              <span>CTC {jobdata.CTC}</span>
+              <span>{t("detailJob.ctc", { ctc: jobdata.CTC })}</span>
             </div>
             <div className="flex items-center space-x-2 text-gray-600">
               <Book className="h-5 w-5" />
@@ -199,21 +201,21 @@ const index = () => {
           <div className="mt-4 flex items-center space-x-2">
             <Clock className="h-4 w-4 text-green-500" />
             <span className="text-green-500 text-sm">
-              Posted on {jobdata.createAt}
+              {t("detailJob.postedOn", { date: jobdata.createAt })}
             </span>
           </div>
         </div>
         {/* Company Section */}
         <div className="p-6 border-b">
           <h2 className="text-xl font-bold text-gray-900 mb-4">
-            About {jobdata.company}
+            {t("detailJob.aboutCompany", { company: jobdata.company })}
           </h2>
           <div className="flex items-center space-x-2 mb-4">
             <a
               href="#"
               className="text-blue-600 hover:text-blue-700 flex items-center space-x-1"
             >
-              <span>Visit company website</span>
+              <span>{t("detailJob.visitWebsite")}</span>
               <ExternalLink className="h-4 w-4" />
             </a>
           </div>
@@ -222,20 +224,20 @@ const index = () => {
         {/* Internship Details Section */}
         <div className="p-6 border-b">
           <h2 className="text-xl font-bold text-gray-900 mb-4">
-            About the Internship
+            {t("detailJob.aboutJob")}
           </h2>
           <p className="text-gray-600 mb-6">{jobdata.aboutJob}</p>
 
           <h3 className="text-lg font-semibold text-gray-900 mb-2">
-            Who can apply
+            {t("detailJob.whoCanApply")}
           </h3>
           <p className="text-gray-600 mb-6">{jobdata.whoCanApply}</p>
 
-          <h3 className="text-lg font-semibold text-gray-900 mb-2">Perks</h3>
+          <h3 className="text-lg font-semibold text-gray-900 mb-2">{t("detailJob.perks")}</h3>
           <p className="text-gray-600 mb-6">{jobdata.perks}</p>
 
           <h3 className="text-lg font-semibold text-gray-900 mb-2">
-            Additional Information
+            {t("detailJob.additionalInfo")}
           </h3>
           <p className="text-gray-600 mb-6">{jobdata.AdditionalInfo}</p>
         </div>
@@ -245,7 +247,7 @@ const index = () => {
             onClick={() => setIsModalOpen(true)}
             className="bg-blue-600 text-white px-8 py-3 rounded-lg hover:bg-blue-700 transition duration-150"
           >
-            Apply Now
+            {t("detailJob.applyNow")}
           </button>
         </div>
       </div>
@@ -257,7 +259,7 @@ const index = () => {
             <div className="p-6 border-b">
               <div className="flex justify-between items-center">
                 <h2 className="text-2xl font-bold text-gray-900">
-                  Apply to {jobdata.company}
+                  {t("detailJob.applyTo", { company: jobdata.company })}
                 </h2>
                 <button
                   onClick={() => setIsModalOpen(false)}
@@ -271,36 +273,36 @@ const index = () => {
               {/* Resume Section */}
               <div>
                 <h3 className="text-lg font-semibold text-gray-900 mb-2">
-                  Your Resume
+                  {t("detailJob.yourResume")}
                 </h3>
                 <p className="text-gray-600">
-                  Your current resume will be submitted with the application
+                  {t("detailJob.resumeNote")}
                 </p>
               </div>
               <div>
                 <h3 className="text-lg font-semibold text-gray-900 mb-2">
-                  Cover Letter
+                  {t("detailJob.coverLetterLabel")}
                 </h3>
                 <p className="text-gray-600 mb-2">
-                  Why should you be selected for this internship?
+                  {t("detailJob.coverLetterPrompt")}
                 </p>
                 <textarea
                   value={coverLetter}
                   onChange={(e) => setCoverLetter(e.target.value)}
                   className="w-full h-32 p-3 border rounded-lg focus:ring-2 focus:ring-blue-500 text-black"
-                  placeholder="Write your cover letter here..."
+                  placeholder={t("detailJob.coverLetterPlaceholder")}
                 ></textarea>
               </div>
               <div>
                 <h3 className="text-lg font-semibold text-gray-900 mb-2">
-                  Your Availability
+                  {t("detailJob.availability")}
                 </h3>
                 <div className="space-y-3">
                   {[
-                    "Yes, I am available to join immediately",
-                    "No, I am currently on notice period",
-                    "No, I will have to serve notice period",
-                    "Other",
+                    t("detailJob.availImmediately"),
+                    t("detailJob.availNoticePeriod"),
+                    t("detailJob.availServeNotice"),
+                    t("detailJob.availOther"),
                   ].map((option) => (
                     <label key={option} className="flex items-center space-x-2">
                       <input
@@ -323,14 +325,14 @@ const index = () => {
                     className="bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700"
                     onClick={handlesubmitapplication}
                   >
-                    Submit Application
+                    {t("detailJob.submitApplication")}
                   </button>
                 ) : (
                   <Link
                     href={`/`}
                     className="bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700"
                   >
-                    Sign up to apply
+                    {t("detailJob.signUpToApply")}
                   </Link>
                 )}
               </div>

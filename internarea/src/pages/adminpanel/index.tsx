@@ -9,55 +9,57 @@ import {
 } from 'lucide-react';
 import Link from 'next/link';
 import { useRequireAdmin } from '@/lib/auth';
+import { useLanguage } from '@/lib/i18n';
 const index = () => {
+    const { t } = useLanguage();
     const isAdmin = useRequireAdmin();
     if (!isAdmin) return null;
     const stats = [
-        { label: 'Total Applications', value: '2,345', change: '+12%', changeType: 'positive' },
-        { label: 'Active Jobs', value: '45', change: '+3%', changeType: 'positive' },
-        { label: 'Active Internships', value: '89', change: '+24%', changeType: 'positive' },
-        { label: 'Conversion Rate', value: '5.25%', change: '-1.3%', changeType: 'negative' },
+        { label: t("adminPanel.totalApplications"), value: '2,345', change: '+12%', changeType: 'positive' },
+        { label: t("adminPanel.activeJobs"), value: '45', change: '+3%', changeType: 'positive' },
+        { label: t("adminPanel.activeInternships"), value: '89', change: '+24%', changeType: 'positive' },
+        { label: t("adminPanel.conversionRate"), value: '5.25%', change: '-1.3%', changeType: 'negative' },
       ];
     
       const menuItems = [
         {
-          title: 'View Applications',
-          description: 'View and manage all applications from candidates',
+          title: t("adminPanel.viewApplications"),
+          description: t("adminPanel.viewApplicationsDesc"),
           icon: Mail,
           link: '/applications',
           color: 'bg-blue-600',
         },
         {
-          title: 'Post Job',
-          description: 'Create and publish new job opportunities',
+          title: t("adminPanel.postJob"),
+          description: t("adminPanel.postJobDesc"),
           icon: Briefcase,
           link: '/postJob',
           color: 'bg-green-600',
         },
         {
-          title: 'Post Internship',
-          description: 'Create and manage internship positions',
+          title: t("adminPanel.postInternship"),
+          description: t("adminPanel.postInternshipDesc"),
           icon: Send,
           link: '/postInternship',
           color: 'bg-purple-600',
         },
         {
-          title: 'Manage Users',
-          description: 'View and manage user accounts',
+          title: t("adminPanel.manageUsers"),
+          description: t("adminPanel.manageUsersDesc"),
           icon: Users,
           link: '/users',
           color: 'bg-orange-600',
         },
         {
-          title: 'Analytics',
-          description: 'View detailed reports and statistics',
+          title: t("adminPanel.analytics"),
+          description: t("adminPanel.analyticsDesc"),
           icon: BarChart,
           link: '/analytics',
           color: 'bg-red-600',
         },
         {
-          title: 'Settings',
-          description: 'Configure system preferences',
+          title: t("adminPanel.settings"),
+          description: t("adminPanel.settingsDesc"),
           icon: Settings,
           link: '/settings',
           color: 'bg-gray-600',
@@ -68,9 +70,9 @@ const index = () => {
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
       {/* Header */}
       <div className="mb-8">
-        <h1 className="text-2xl font-bold text-gray-900">Admin Dashboard</h1>
+        <h1 className="text-2xl font-bold text-gray-900">{t("adminPanel.title")}</h1>
         <p className="mt-1 text-sm text-gray-500">
-          Manage your jobs, internships, and applications
+          {t("adminPanel.subtitle")}
         </p>
       </div>
 

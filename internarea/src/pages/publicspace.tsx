@@ -8,6 +8,7 @@ import ErrorState from "@/Components/ErrorState";
 import api, { authHeaders } from "@/lib/api";
 import { useSelector } from "react-redux";
 import { selectuser } from "@/Feature/Userslice";
+import { useLanguage } from "@/lib/i18n";
 
 interface Post {
   _id: string;
@@ -27,6 +28,7 @@ interface Post {
 }
 
 export default function PublicSpacePage() {
+  const { t } = useLanguage();
   const user = useSelector(selectuser);
   const [posts, setPosts] = useState<Post[]>([]);
   const [loading, setLoading] = useState(true);
@@ -42,13 +44,13 @@ export default function PublicSpacePage() {
       const response = await api.get("/publicspace");
 
       if (!response.data) {
-        throw new Error("No data received");
+        throw new Error(t("publicSpace.noData"));
       }
 
       setPosts(response.data);
       setError(null);
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Failed to fetch posts");
+      setError(err instanceof Error ? err.message : t("publicSpace.fetchFailed"));
     } finally {
       setLoading(false);
     }
@@ -56,7 +58,7 @@ export default function PublicSpacePage() {
 
   const handleCreatePost = async (content: string, media?: string) => {
     if (!user?.uid) {
-      throw new Error("Please login to post");
+      throw new Error(t("publicSpace.loginRequired"));
     }
     try {
       const newPost = {
@@ -79,10 +81,10 @@ export default function PublicSpacePage() {
       <main className="max-w-4xl mx-auto px-4 py-6">
         <header className="mb-8">
           <h1 className="text-3xl font-bold text-gray-900 dark:text-gray-100 mb-2">
-            Public Space
+            {t("publicSpace.title")}
           </h1>
           <p className="text-gray-600 dark:text-gray-400">
-            Share and discover public posts from the community
+            {t("publicSpace.subtitle")}
           </p>
         </header>
 
@@ -92,8 +94,7 @@ export default function PublicSpacePage() {
           ) : (
             <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-200 dark:border-gray-700 p-6 mb-6 text-center">
               <p className="text-gray-600 dark:text-gray-400 mb-2">
-                Login to share your thoughts, experiences, or insights with the
-                community.
+                {t("publicSpace.loginPrompt")}
               </p>
               <button
                 onClick={() =>
@@ -101,7 +102,7 @@ export default function PublicSpacePage() {
                 }
                 className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
               >
-                Login to Post
+                {t("publicSpace.loginToPost")}
               </button>
             </div>
           )}

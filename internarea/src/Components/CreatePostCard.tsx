@@ -3,6 +3,7 @@ import React, { useEffect, useRef, useState } from "react";
 import { useSelector } from "react-redux";
 import { selectuser } from "@/Feature/Userslice";
 import api, { authHeaders } from "@/lib/api";
+import { useLanguage } from "@/lib/i18n";
 
 interface CreatePostCardProps {
   onCreatePost?: (content: string, media?: string) => Promise<void>;
@@ -23,6 +24,7 @@ export default function CreatePostCard({ onCreatePost }: CreatePostCardProps) {
   const [modal, setModal] = useState<PostModal | null>(null);
   const fileInputRef = React.useRef<HTMLInputElement>(null);
   const user = useSelector(selectuser);
+  const { t } = useLanguage();
 
   const uid = user?.uid || null;
   const prevUid = useRef<string | null>(null);
@@ -107,28 +109,28 @@ export default function CreatePostCard({ onCreatePost }: CreatePostCardProps) {
 
       if (error?.message === "Please login to post") {
         setModal({
-          title: "Login Required",
-          message: "Please login to your account to post in Public Space.",
+          title: t("createPost.loginRequired.title"),
+          message: t("createPost.loginRequired.message"),
         });
       } else if (status === 403) {
         setModal({
-          title: "You can't post yet",
+          title: t("createPost.noFriends.title"),
           message:
             backendMessage ||
-            "You need at least 1 friend to post in Public Space. Add friends to unlock posting!",
+            t("createPost.noFriends.message"),
         });
       } else if (status === 429) {
         setModal({
-          title: "Daily Posting Limit Reached",
+          title: t("createPost.limitReached.title"),
           message:
             backendMessage ||
-            "You have reached your daily posting limit. Come back tomorrow!",
+            t("createPost.limitReached.message"),
         });
       } else {
         setModal({
-          title: "Something went wrong",
+          title: t("createPost.genericError.title"),
           message:
-            backendMessage || "Failed to create post. Please try again.",
+            backendMessage || t("createPost.genericError.message"),
         });
       }
     } finally {
@@ -146,7 +148,7 @@ export default function CreatePostCard({ onCreatePost }: CreatePostCardProps) {
             {user?.photo ? (
               <img
                 src={user.photo}
-                alt={user.name || "user"}
+                alt={user.name || t("createPost.userAlt")}
                 className="w-10 h-10 rounded-full object-cover"
               />
             ) : (
@@ -164,7 +166,7 @@ export default function CreatePostCard({ onCreatePost }: CreatePostCardProps) {
             )}
           </div>
           <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100">
-            Create Post
+            {t("createPost.title")}
           </h3>
         </div>
 
@@ -172,7 +174,7 @@ export default function CreatePostCard({ onCreatePost }: CreatePostCardProps) {
           <textarea
             value={content}
             onChange={(e) => setContent(e.target.value)}
-            placeholder="What's on your mind? Share your internship experience, job insights, or career advice..."
+            placeholder={t("createPost.placeholder")}
             className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none dark:bg-gray-700 dark:border-gray-600 dark:text-gray-100 dark:placeholder-gray-400"
             rows={3}
           />
@@ -188,7 +190,7 @@ export default function CreatePostCard({ onCreatePost }: CreatePostCardProps) {
               ) : (
                 <img
                   src={preview}
-                  alt="Media preview"
+                  alt={t("createPost.mediaPreviewAlt")}
                   className="h-48 rounded-lg object-cover"
                 />
               )}
@@ -196,7 +198,7 @@ export default function CreatePostCard({ onCreatePost }: CreatePostCardProps) {
                 type="button"
                 onClick={removeMedia}
                 className="absolute top-2 right-2 w-8 h-8 rounded-full bg-black/60 text-white flex items-center justify-center hover:bg-black/80"
-                aria-label="Remove media"
+                aria-label={t("createPost.removeMedia")}
               >
                 <svg
                   className="w-4 h-4"
@@ -236,7 +238,7 @@ export default function CreatePostCard({ onCreatePost }: CreatePostCardProps) {
                 />
               </svg>
               <span className="text-sm">
-                {mediaFile ? "Change media" : "Add Photo / Video"}
+                {mediaFile ? t("createPost.changeMedia") : t("createPost.addMedia")}
               </span>
             </button>
             <input
@@ -252,7 +254,7 @@ export default function CreatePostCard({ onCreatePost }: CreatePostCardProps) {
               disabled={isLoading || (!content.trim() && !mediaFile)}
               className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:bg-blue-300 disabled:cursor-not-allowed transition-colors"
             >
-              {isLoading ? "Posting..." : "Post"}
+              {isLoading ? t("createPost.posting") : t("createPost.post")}
             </button>
           </div>
         </form>
@@ -292,7 +294,7 @@ export default function CreatePostCard({ onCreatePost }: CreatePostCardProps) {
               onClick={() => setModal(null)}
               className="w-full px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
             >
-              Got it
+              {t("createPost.gotIt")}
             </button>
           </div>
         </div>

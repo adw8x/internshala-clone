@@ -8,6 +8,7 @@ import { useRouter } from "next/router";
 import React, { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import api, { authHeaders } from "@/lib/api";
+import { useLanguage } from "@/lib/i18n";
 
 interface ProfileResume {
   _id: string;
@@ -19,6 +20,7 @@ interface ProfileResume {
 }
 
 const index = () => {
+  const { t } = useLanguage();
   const user = useSelector(selectuser);
   const dispatch = useDispatch();
   const router = useRouter();
@@ -76,7 +78,7 @@ const index = () => {
     } catch (err) {
       console.error("Delete failed:", err);
       setDeleting(false);
-      alert("Failed to delete account. Please try again.");
+      alert(t("profile.deleteFailed"));
     }
   };
 
@@ -120,7 +122,7 @@ const index = () => {
                     {stats.active}
                   </span>
                   <p className="text-blue-600 text-sm mt-1">
-                    Active Applications
+                    {t("profile.activeApps")}
                   </p>
                 </div>
                 <div className="bg-green-50 rounded-lg p-4 text-center">
@@ -128,7 +130,7 @@ const index = () => {
                     {stats.accepted}
                   </span>
                   <p className="text-green-600 text-sm mt-1">
-                    Accepted Applications
+                    {t("profile.acceptedApps")}
                   </p>
                 </div>
                 <div className="bg-purple-50 rounded-lg p-4 text-center">
@@ -136,7 +138,7 @@ const index = () => {
                     {friendCount}
                   </span>
                   <p className="text-purple-600 text-sm mt-1">
-                    Connections
+                    {t("profile.connections")}
                   </p>
                 </div>
               </div>
@@ -146,19 +148,18 @@ const index = () => {
                 <div className="flex items-center justify-between mb-3">
                   <div className="flex items-center gap-2">
                     <FileText className="h-5 w-5 text-blue-600" />
-                    <h3 className="font-semibold text-gray-900">My Resumes</h3>
+                    <h3 className="font-semibold text-gray-900">{t("profile.myResumes")}</h3>
                   </div>
                   <Link
                     href="/resume"
                     className="text-blue-600 hover:underline text-sm font-medium"
                   >
-                    Create Resume
+                    {t("profile.createResume")}
                   </Link>
                 </div>
                 {resumes.length === 0 ? (
                   <p className="text-gray-600 text-sm">
-                    No resumes yet. Create a professional resume to auto-attach to
-                    your internship applications.
+                    {t("profile.noResumes")}
                   </p>
                 ) : (
                   <div className="space-y-2">
@@ -170,7 +171,7 @@ const index = () => {
                         <div>
                           <p className="font-medium text-gray-900 text-sm">{r.name}</p>
                           <p className="text-xs text-gray-500">
-                            {r.status === "paid" ? "Ready · Auto-attached to applications" : "Awaiting payment"} · ₹{r.amountINR}
+                            {r.status === "paid" ? t("profile.resumeReady") : t("profile.resumeAwaiting")} · ₹{r.amountINR}
                           </p>
                         </div>
                         {r.status === "paid" && (
@@ -178,7 +179,7 @@ const index = () => {
                             href={`/resume/${r._id}`}
                             className="text-blue-600 hover:underline text-sm font-medium"
                           >
-                            View
+                            {t("profile.view")}
                           </Link>
                         )}
                       </div>
@@ -193,14 +194,14 @@ const index = () => {
                   href="/userapplication"
                   className="inline-flex items-center px-6 py-3 bg-blue-600 text-white font-medium rounded-lg hover:bg-blue-700 transition-colors duration-200"
                 >
-                  View Applications
+                  {t("profile.viewApplications")}
                   <ExternalLink className="ml-2 h-4 w-4" />
                 </Link>
                 <button
                   onClick={() => setShowDeleteModal(true)}
                   className="inline-flex items-center px-6 py-3 bg-white border border-red-300 text-red-600 font-medium rounded-lg hover:bg-red-50 transition-colors duration-200"
                 >
-                  Delete Account
+                  {t("profile.deleteAccount")}
                   <Trash2 className="ml-2 h-4 w-4" />
                 </button>
               </div>
@@ -215,16 +216,14 @@ const index = () => {
           <div className="bg-white rounded-xl shadow-xl max-w-md w-full mx-4 p-6">
             <div className="flex items-center justify-between mb-4">
               <h3 className="text-lg font-semibold text-gray-900">
-                Delete Account
+                {t("profile.deleteTitle")}
               </h3>
               <button onClick={() => setShowDeleteModal(false)}>
                 <X className="h-5 w-5 text-gray-400 hover:text-gray-600" />
               </button>
             </div>
             <p className="text-gray-600 mb-6">
-              This will permanently delete your account, all your posts, comments,
-              connections, and applications. Your name and email will be freed up.
-              This action cannot be undone.
+              {t("profile.deleteDescription")}
             </p>
             <div className="flex justify-end gap-3">
               <button
@@ -232,14 +231,14 @@ const index = () => {
                 disabled={deleting}
                 className="px-4 py-2 text-gray-600 hover:text-gray-800 disabled:opacity-50"
               >
-                Cancel
+                {t("profile.cancel")}
               </button>
               <button
                 onClick={handleDeleteAccount}
                 disabled={deleting}
                 className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 disabled:opacity-50"
               >
-                {deleting ? "Deleting..." : "Yes, Delete My Account"}
+                {deleting ? t("profile.deleting") : t("profile.deleteConfirm")}
               </button>
             </div>
           </div>

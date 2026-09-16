@@ -11,6 +11,7 @@ import { logout } from "@/Feature/Userslice";
 import { setAdmin, clearAdmin } from "@/lib/auth";
 import { signInWithGoogle } from "@/lib/googleLogin";
 import api from "@/lib/api";
+import { useLanguage, LANGS, LangCode, isFrSessionVerified, markFrSessionVerified } from "@/lib/i18n";
 
 interface SearchItem {
   type: "internship" | "job";
@@ -24,11 +25,20 @@ const Navbar = () => {
   const user = useSelector(selectuser);
   const dispatch = useDispatch();
   const router = useRouter();
+  const { lang, setLang, t } = useLanguage();
   const [search, setSearch] = useState("");
   const [results, setResults] = useState<SearchItem[]>([]);
   const [showDropdown, setShowDropdown] = useState(false);
   const [searching, setSearching] = useState(false);
   const searchRef = useRef<HTMLDivElement>(null);
+  const [langDropdownOpen, setLangDropdownOpen] = useState(false);
+  const langRef = useRef<HTMLDivElement>(null);
+  const [frModalOpen, setFrModalOpen] = useState(false);
+  const [frEmail, setFrEmail] = useState("");
+  const [frCode, setFrCode] = useState("");
+  const [frStep, setFrStep] = useState<"email" | "otp">("email");
+  const [frSending, setFrSending] = useState(false);
+  const [frVerifying, setFrVerifying] = useState(false);
 
   useEffect(() => {
     if (!search.trim()) {
@@ -97,76 +107,120 @@ const Navbar = () => {
       ) {
         setShowDropdown(false);
       }
+      if (langRef.current && !langRef.current.contains(event.target as Node)) {
+        setLangDropdownOpen(false);
+      }
     };
     document.addEventListener("mousedown", handleClickOutside);
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
-  const handlelogin = async () => {
+  const handleLogin = async () => {
     try {
       const result = await signInWithGoogle();
       if (result.role === "admin") {
         setAdmin();
-        toast.success("Logged in as admin");
+        toast.success(t("toast.loggedInAsAdmin"));
         router.push("/adminpanel");
       } else {
-        toast.success("logged in successfully");
+        toast.success(t("toast.loggedInSuccessfully"));
       }
     } catch (error) {
       console.error(error);
-      toast.error("login failed");
+      toast.error(t("toast.loginFailed"));
     }
   };
-  const handlelogout = () => {
+  const handleLogout = () => {
     clearAdmin();
     dispatch(logout());
     signOut(auth);
     router.push("/");
   };
+
+  const handleLangSwitch = (code: LangCode) => {
+    setLangDropdownOpen(false);
+    if (code === "fr" && !isFrSessionVerified()) {
+      setFrEmail(user?.email || "");
+      setFrStep(user?.email ? "otp" : "email");
+      setFrCode("");
+      setFrModalOpen(true);
+      return;
+    }
+    setLang(code);
+  };
+
+  const handleFrSendOtp = async () => {
+    if (!frEmail) return;
+    setFrSending(true);
+    try {
+      await api.post("/language/send-otp", { email: frEmail });
+      toast.success(t("lang.otpSent", { email: frEmail }));
+      setFrStep("otp");
+    } catch (err: any) {
+      toast.error(err?.response?.data?.error || t("lang.failed"));
+    } finally {
+      setFrSending(false);
+    }
+  };
+
+  const handleFrVerifyOtp = async () => {
+    if (!frCode) return;
+    setFrVerifying(true);
+    try {
+      await api.post("/language/verify-otp", { email: frEmail, code: frCode });
+      markFrSessionVerified();
+      setLang("fr");
+      setFrModalOpen(false);
+      toast.success(t("lang.verified"));
+    } catch (err: any) {
+      toast.error(err?.response?.data?.error || t("lang.failed"));
+    } finally {
+      setFrVerifying(false);
+    }
+  };
+
   return (
     <div className="relative">
       <nav className="bg-white shadow-md">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between h-16 items-center">
-            {/* Logo */}
             <div className="flex-shrink-0">
               <a href="/" className="text-xl font-bold text-blue-600">
                 <img src={"/logo.png"} alt="" className="h-16" />
               </a>
             </div>
-            {/* Navigation Links */}
             <div className="hidden md:flex items-center space-x-8">
               <button className="flex items-center space-x-1 text-gray-700 hover:text-blue-600">
                 <Link href={"/internship"}>
-                  <span>Internships</span>
+                  <span>{t("nav.internships")}</span>
                 </Link>
               </button>
               <button className="flex items-center space-x-1 text-gray-700 hover:text-blue-600">
                 <Link href={"/job"}>
-                  <span>Jobs</span>
+                  <span>{t("nav.jobs")}</span>
                 </Link>
               </button>
               <button className="flex items-center space-x-1 text-gray-700 hover:text-blue-600">
                 <Link href={"/publicspace"}>
-                  <span>Public Space</span>
+                  <span>{t("nav.publicSpace")}</span>
                 </Link>
               </button>
               {user && (
                 <button className="flex items-center space-x-1 text-gray-700 hover:text-blue-600">
                   <Link href={"/discover"}>
-                    <span>Discover</span>
+                    <span>{t("nav.discover")}</span>
                   </Link>
                 </button>
               )}
               <button className="flex items-center space-x-1 text-gray-700 hover:text-blue-600">
                 <Link href={"/plans"}>
-                  <span>Plans</span>
+                  <span>{t("nav.plans")}</span>
                 </Link>
               </button>
               {user && (
                 <button className="flex items-center space-x-1 text-gray-700 hover:text-blue-600">
                   <Link href={"/resume"}>
-                    <span>Resume</span>
+                    <span>{t("nav.resume")}</span>
                   </Link>
                 </button>
               )}
@@ -175,7 +229,7 @@ const Navbar = () => {
                   <Search size={16} className="text-gray-400" />
                   <input
                     type="text"
-                    placeholder="Search opportunities..."
+                    placeholder={t("nav.searchPlaceholder")}
                     value={search}
                     onChange={(e) => {
                       setSearch(e.target.value);
@@ -188,19 +242,19 @@ const Navbar = () => {
                   <div className="absolute top-full mt-2 w-80 bg-white shadow-lg rounded-xl border border-gray-200 py-2 z-50">
                     {searching && (
                       <p className="px-4 py-2 text-sm text-gray-500">
-                        Searching...
+                        {t("nav.searching")}
                       </p>
                     )}
                     {!searching && results.length === 0 && (
                       <p className="px-4 py-2 text-sm text-gray-500">
-                        No results found
+                        {t("nav.noResults")}
                       </p>
                     )}
                     {!searching && results.length > 0 && (
                       <>
                         {results.some((r) => r.type === "internship") && (
                           <p className="px-4 pt-2 pb-1 text-xs font-semibold text-gray-400 uppercase">
-                            Internships
+                            {t("nav.internshipsHeader")}
                           </p>
                         )}
                         {results
@@ -225,7 +279,7 @@ const Navbar = () => {
                           ))}
                         {results.some((r) => r.type === "job") && (
                           <p className="px-4 pt-2 pb-1 text-xs font-semibold text-gray-400 uppercase">
-                            Jobs
+                            {t("nav.jobsHeader")}
                           </p>
                         )}
                         {results
@@ -255,15 +309,36 @@ const Navbar = () => {
               </div>
             </div>
 
-            {/* Auth Buttons */}
             <div className="flex items-center space-x-4">
+              <div className="relative" ref={langRef}>
+                <button
+                  onClick={() => setLangDropdownOpen(!langDropdownOpen)}
+                  className="px-3 py-1.5 text-sm border border-gray-300 rounded-lg hover:bg-gray-50 text-gray-700"
+                >
+                  {LANGS.find((l) => l.code === lang)?.label || "English"}
+                </button>
+                {langDropdownOpen && (
+                  <div className="absolute right-0 top-full mt-1 w-40 bg-white shadow-lg rounded-lg border border-gray-200 py-1 z-50">
+                    {LANGS.map((l) => (
+                      <button
+                        key={l.code}
+                        onClick={() => handleLangSwitch(l.code)}
+                        className={`block w-full text-left px-4 py-2 text-sm hover:bg-gray-50 ${lang === l.code ? "text-blue-600 font-semibold" : "text-gray-700"}`}
+                      >
+                        {l.label}
+                      </button>
+                    ))}
+                  </div>
+                )}
+              </div>
+
               {user ? (
                 <div className="relative flex items-center space-x-2">
                   <Link href={"/profile"}>
                     {user.photo ? (
                       <img
                         src={user.photo}
-                        alt={user.name || "profile"}
+                        alt={user.name || t("nav.profileAlt")}
                         className="w-8 h-8 rounded-full"
                       />
                     ) : (
@@ -274,25 +349,25 @@ const Navbar = () => {
                   </Link>
                   <button
                     className="flex items-center px-4 py-2 text-gray-700 hover:bg-gray-200 rounded-lg"
-                    onClick={handlelogout}
+                    onClick={handleLogout}
                   >
-                    Logout
+                    {t("nav.logout")}
                   </button>
                 </div>
               ) : (
                 <>
                   <Link href="/login?tab=admin">
                     <span className="text-gray-600 hover:text-gray-800">
-                      Admin
+                      {t("nav.admin")}
                     </span>
                   </Link>
                   <Link href="/login?tab=register">
                     <span className="text-gray-600 hover:text-gray-800">
-                      User
+                      {t("nav.user")}
                     </span>
                   </Link>
                   <button
-                    onClick={handlelogin}
+                    onClick={handleLogin}
                     className="bg-white border border-gray-300 rounded-lg px-4 py-2 flex items-center justify-center space-x-2 hover:bg-gray-50 "
                   >
                     <svg className="w-5 h-5" viewBox="0 0 24 24">
@@ -314,9 +389,9 @@ const Navbar = () => {
                       />
                     </svg>
                     <span className="text-gray-700 hidden lg:inline">
-                      Sign in with Google
+                      {t("nav.signInGoogle")}
                     </span>
-                    <span className="text-gray-700 lg:hidden">Google</span>
+                    <span className="text-gray-700 lg:hidden">{t("nav.googleShort")}</span>
                   </button>
                 </>
               )}
@@ -324,6 +399,50 @@ const Navbar = () => {
           </div>
         </div>
       </nav>
+
+      {frModalOpen && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-[100]">
+          <div className="bg-white rounded-xl shadow-xl max-w-md w-full mx-4 p-6">
+            <h2 className="text-lg font-bold text-gray-900 mb-2">{t("lang.title")}</h2>
+            <p className="text-sm text-gray-600 mb-4">{t("lang.description")}</p>
+            {frStep === "email" ? (
+              <>
+                <input
+                  type="email"
+                  placeholder={t("lang.emailPlaceholder")}
+                  value={frEmail}
+                  onChange={(e) => setFrEmail(e.target.value)}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg mb-4 focus:ring-2 focus:ring-blue-500 focus:outline-none"
+                />
+                <div className="flex justify-end space-x-3">
+                  <button onClick={() => setFrModalOpen(false)} className="px-4 py-2 text-gray-600 hover:bg-gray-100 rounded-lg">{t("lang.cancel")}</button>
+                  <button onClick={handleFrSendOtp} disabled={!frEmail || frSending} className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50">{frSending ? t("lang.sending") : t("lang.sendOtp")}</button>
+                </div>
+              </>
+            ) : (
+              <>
+                <p className="text-sm text-gray-500 mb-3">{t("lang.otpRequired")}</p>
+                <input
+                  type="text"
+                  placeholder={t("lang.otpPlaceholder")}
+                  value={frCode}
+                  onChange={(e) => setFrCode(e.target.value)}
+                  maxLength={6}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg mb-2 focus:ring-2 focus:ring-blue-500 focus:outline-none"
+                />
+                <p className="text-xs text-gray-400 mb-4">{t("lang.otpExpiry")}</p>
+                <div className="flex justify-between">
+                  <button onClick={handleFrSendOtp} disabled={frSending} className="text-sm text-blue-600 hover:underline disabled:opacity-50">{t("lang.resend")}</button>
+                  <div className="space-x-3">
+                    <button onClick={() => setFrModalOpen(false)} className="px-4 py-2 text-gray-600 hover:bg-gray-100 rounded-lg">{t("lang.cancel")}</button>
+                    <button onClick={handleFrVerifyOtp} disabled={!frCode || frVerifying} className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50">{frVerifying ? t("lang.verifying") : t("lang.verifyOtp")}</button>
+                  </div>
+                </div>
+              </>
+            )}
+          </div>
+        </div>
+      )}
     </div>
   );
 };

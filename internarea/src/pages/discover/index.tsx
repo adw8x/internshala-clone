@@ -5,6 +5,7 @@ import { selectuser } from "@/Feature/Userslice";
 import api, { authHeaders } from "@/lib/api";
 import { Search, UserPlus, Check, Clock, X, Users } from "lucide-react";
 import { toast } from "react-toastify";
+import { useLanguage } from "@/lib/i18n";
 
 interface DiscoverUser {
   _id: string;
@@ -23,6 +24,7 @@ interface PendingRequest {
 }
 
 export default function DiscoverPage() {
+  const { t } = useLanguage();
   const user = useSelector(selectuser);
   const [users, setUsers] = useState<DiscoverUser[]>([]);
   const [pendingRequests, setPendingRequests] = useState<PendingRequest[]>([]);
@@ -40,11 +42,11 @@ export default function DiscoverPage() {
       });
       setUsers(res.data.users);
     } catch {
-      toast.error("Failed to load users");
+      toast.error(t("discover.loadUsersFailed"));
     } finally {
       setLoading(false);
     }
-  }, [user, search]);
+  }, [user, search, t]);
 
   const fetchPendingRequests = useCallback(async () => {
     if (!user) return;
@@ -55,9 +57,9 @@ export default function DiscoverPage() {
       });
       setPendingRequests(res.data.connections);
     } catch {
-      toast.error("Failed to load requests");
+      toast.error(t("discover.loadRequestsFailed"));
     }
-  }, [user]);
+  }, [user, t]);
 
   useEffect(() => {
     fetchUsers();
@@ -76,14 +78,14 @@ export default function DiscoverPage() {
         { receiverId: userId },
         { headers: authHeaders(user) }
       );
-      toast.success("Request sent!");
+      toast.success(t("discover.requestSentToast"));
       setUsers((prev) =>
         prev.map((u) =>
           u._id === userId ? { ...u, connectionStatus: "sent" } : u
         )
       );
     } catch (err: any) {
-      toast.error(err?.response?.data?.error || "Failed to send request");
+      toast.error(err?.response?.data?.error || t("discover.sendRequestFailed"));
     }
   };
 
@@ -94,11 +96,11 @@ export default function DiscoverPage() {
         { connectionId },
         { headers: authHeaders(user) }
       );
-      toast.success("Connection accepted!");
+      toast.success(t("discover.connectionAccepted"));
       setPendingRequests((prev) => prev.filter((r) => r._id !== connectionId));
       fetchUsers();
     } catch {
-      toast.error("Failed to accept request");
+      toast.error(t("discover.acceptFailed"));
     }
   };
 
@@ -109,10 +111,10 @@ export default function DiscoverPage() {
         { connectionId },
         { headers: authHeaders(user) }
       );
-      toast.success("Request rejected");
+      toast.success(t("discover.requestRejected"));
       setPendingRequests((prev) => prev.filter((r) => r._id !== connectionId));
     } catch {
-      toast.error("Failed to reject request");
+      toast.error(t("discover.rejectFailed"));
     }
   };
 
@@ -122,10 +124,10 @@ export default function DiscoverPage() {
         <div className="text-center">
           <Users className="mx-auto h-12 w-12 text-gray-400" />
           <h3 className="mt-2 text-sm font-medium text-gray-900">
-            Login to discover people
+            {t("discover.loginTitle")}
           </h3>
           <p className="mt-1 text-sm text-gray-500">
-            Sign in to connect with other users
+            {t("discover.loginSubtitle")}
           </p>
         </div>
       </div>
@@ -136,7 +138,7 @@ export default function DiscoverPage() {
     <div className="min-h-screen bg-gray-50">
       <div className="max-w-4xl mx-auto px-4 py-8">
         <h1 className="text-2xl font-bold text-gray-900 mb-6">
-          Discover People
+          {t("discover.title")}
         </h1>
 
         {/* Tabs */}
@@ -149,7 +151,7 @@ export default function DiscoverPage() {
                 : "border-transparent text-gray-500 hover:text-gray-700"
             }`}
           >
-            Discover
+            {t("discover.tabDiscover")}
           </button>
           <button
             onClick={() => setActiveTab("requests")}
@@ -159,7 +161,7 @@ export default function DiscoverPage() {
                 : "border-transparent text-gray-500 hover:text-gray-700"
             }`}
           >
-            Requests
+{t("discover.tabRequests")}
             {pendingRequests.length > 0 && (
               <span className="ml-2 inline-flex items-center justify-center w-5 h-5 text-xs font-medium text-white bg-red-500 rounded-full">
                 {pendingRequests.length}
@@ -178,7 +180,7 @@ export default function DiscoverPage() {
                   type="text"
                   value={search}
                   onChange={(e) => setSearch(e.target.value)}
-                  placeholder="Search by name or email..."
+                  placeholder={t("discover.searchPlaceholder")}
                   className="block w-full pl-10 pr-3 py-2.5 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
                 />
               </div>
@@ -206,10 +208,10 @@ export default function DiscoverPage() {
               <div className="text-center py-12">
                 <Users className="mx-auto h-12 w-12 text-gray-400" />
                 <h3 className="mt-2 text-sm font-medium text-gray-900">
-                  No users found
+                  {t("discover.noUsers")}
                 </h3>
                 <p className="mt-1 text-sm text-gray-500">
-                  {search ? "Try a different search" : "No other users yet"}
+                  {search ? t("discover.tryDifferentSearch") : t("discover.noUsersYet")}
                 </p>
               </div>
             ) : (
@@ -248,12 +250,12 @@ export default function DiscoverPage() {
                           className="w-full flex items-center justify-center space-x-2 px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700 transition-colors"
                         >
                           <UserPlus className="h-4 w-4" />
-                          <span>Connect</span>
+                          <span>{t("discover.connect")}</span>
                         </button>
                       ) : u.connectionStatus === "sent" ? (
                         <div className="w-full flex items-center justify-center space-x-2 px-4 py-2 bg-gray-100 text-gray-600 text-sm font-medium rounded-lg">
                           <Clock className="h-4 w-4" />
-                          <span>Request Sent</span>
+                          <span>{t("discover.requestSent")}</span>
                         </div>
                       ) : u.connectionStatus === "received" ? (
                         <div className="w-full flex items-center justify-center space-x-2">
@@ -267,7 +269,7 @@ export default function DiscoverPage() {
                             }
                             className="flex-1 px-4 py-2 bg-green-600 text-white text-sm font-medium rounded-lg hover:bg-green-700 transition-colors"
                           >
-                            Accept
+                            {t("discover.accept")}
                           </button>
                           <button
                             onClick={() =>
@@ -279,13 +281,13 @@ export default function DiscoverPage() {
                             }
                             className="flex-1 px-4 py-2 bg-red-100 text-red-700 text-sm font-medium rounded-lg hover:bg-red-200 transition-colors"
                           >
-                            Reject
+                            {t("discover.reject")}
                           </button>
                         </div>
                       ) : (
                         <div className="w-full flex items-center justify-center space-x-2 px-4 py-2 bg-green-50 text-green-700 text-sm font-medium rounded-lg">
                           <Check className="h-4 w-4" />
-                          <span>Connected</span>
+                          <span>{t("discover.connected")}</span>
                         </div>
                       )}
                     </div>
@@ -302,10 +304,10 @@ export default function DiscoverPage() {
               <div className="text-center py-12">
                 <UserPlus className="mx-auto h-12 w-12 text-gray-400" />
                 <h3 className="mt-2 text-sm font-medium text-gray-900">
-                  No pending requests
+                  {t("discover.noPendingRequests")}
                 </h3>
                 <p className="mt-1 text-sm text-gray-500">
-                  When someone sends you a connection request, it will appear here
+                  {t("discover.pendingRequestsEmpty")}
                 </p>
               </div>
             ) : (
@@ -341,13 +343,13 @@ export default function DiscoverPage() {
                         onClick={() => handleAccept(req._id)}
                         className="px-4 py-2 bg-green-600 text-white text-sm font-medium rounded-lg hover:bg-green-700 transition-colors"
                       >
-                        Accept
+                        {t("discover.accept")}
                       </button>
                       <button
                         onClick={() => handleReject(req._id)}
                         className="px-4 py-2 bg-red-100 text-red-700 text-sm font-medium rounded-lg hover:bg-red-200 transition-colors"
                       >
-                        Reject
+                        {t("discover.reject")}
                       </button>
                     </div>
                   </div>
