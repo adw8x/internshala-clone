@@ -10,12 +10,14 @@ import api from "@/lib/api";
 import { setAdmin } from "@/lib/auth";
 import { signInWithGoogle } from "@/lib/googleLogin";
 import { login } from "@/Feature/Userslice";
+import { useLanguage } from "@/lib/i18n";
 
 type Tab = "register" | "admin";
 
 export default function LoginPage() {
   const router = useRouter();
   const dispatch = useDispatch();
+  const { t } = useLanguage();
   const tabParam = (router.query.tab as Tab) || "register";
   const [tab, setTab] = useState<Tab>(tabParam);
 
@@ -47,7 +49,7 @@ export default function LoginPage() {
   const handleRegister = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!form.name || !form.email || !form.password) {
-      toast.error("Please fill in all details");
+      toast.error(t("login.fillAllDetails"));
       return;
     }
     setIsloading(true);
@@ -71,10 +73,10 @@ export default function LoginPage() {
           photo: "",
         })
       );
-      toast.success("Registered successfully");
+      toast.success(t("login.registered"));
       goHome();
     } catch (error: any) {
-      toast.error(error?.response?.data?.error || error?.message || "Registration failed");
+      toast.error(error?.response?.data?.error || error?.message || t("login.registrationFailed"));
     } finally {
       setIsloading(false);
     }
@@ -83,7 +85,7 @@ export default function LoginPage() {
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!form.email || !form.password) {
-      toast.error("Please fill in all details");
+      toast.error(t("login.fillAllDetails"));
       return;
     }
     setIsloading(true);
@@ -108,10 +110,10 @@ export default function LoginPage() {
           photo: "",
         })
       );
-      toast.success("Logged in successfully");
+      toast.success(t("login.loggedIn"));
       goHome();
     } catch (error: any) {
-      toast.error(error?.response?.data?.error || error?.message || "Login failed");
+      toast.error(error?.response?.data?.error || error?.message || t("toast.loginFailed"));
     } finally {
       setIsloading(false);
     }
@@ -120,7 +122,7 @@ export default function LoginPage() {
   const handleAdminLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!form.email || !form.password) {
-      toast.error("Please fill in all details");
+      toast.error(t("login.fillAllDetails"));
       return;
     }
     setIsloading(true);
@@ -146,10 +148,10 @@ export default function LoginPage() {
           photo: "",
         })
       );
-      toast.success("Logged in as admin");
+      toast.success(t("toast.loggedInAsAdmin"));
       router.push("/adminpanel");
     } catch (error) {
-      toast.error("Invalid admin credentials");
+      toast.error(t("login.invalidAdminCredentials"));
     } finally {
       setIsloading(false);
     }
@@ -158,7 +160,7 @@ export default function LoginPage() {
   const handleAdminRegister = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!form.username || !form.email || !form.password) {
-      toast.error("Please fill in all details");
+      toast.error(t("login.fillAllDetails"));
       return;
     }
     setIsloading(true);
@@ -168,11 +170,11 @@ export default function LoginPage() {
         email: form.email,
         password: form.password,
       });
-      toast.success("Admin account created. You can now sign in.");
+      toast.success(t("login.adminAccountCreated"));
       setAdminSubTab("signin");
       setForm((prev) => ({ ...prev, password: "" }));
     } catch (error: any) {
-      toast.error(error?.response?.data?.error || "Failed to create admin account");
+      toast.error(error?.response?.data?.error || t("login.createAdminFailed"));
     } finally {
       setIsloading(false);
     }
@@ -184,7 +186,7 @@ export default function LoginPage() {
       const result = await signInWithGoogle();
       if (result.role === "admin") {
         setAdmin({ email: result.email, name: result.name });
-        toast.success("Logged in as admin");
+        toast.success(t("toast.loggedInAsAdmin"));
         router.push("/adminpanel");
       } else {
         dispatch(
@@ -195,20 +197,20 @@ export default function LoginPage() {
             photo: result.photo,
           })
         );
-        toast.success("Logged in successfully");
+        toast.success(t("login.loggedIn"));
         goHome();
       }
     } catch (error: any) {
       console.error(error);
-      toast.error(error?.message || "Google sign-in failed");
+      toast.error(error?.message || t("toast.googleSignInFailed"));
     } finally {
       setIsloading(false);
     }
   };
 
   const tabs: { key: Tab; label: string }[] = [
-    { key: "register", label: "User" },
-    { key: "admin", label: "Admin" },
+    { key: "register", label: t("login.tabUser") },
+    { key: "admin", label: t("login.tabAdmin") },
   ];
 
   const inputCls =
@@ -219,29 +221,29 @@ export default function LoginPage() {
   const googleLabel =
     tab === "admin"
       ? adminSubTab === "create"
-        ? "Sign up as Admin with Google"
-        : "Sign in as Admin with Google"
+        ? t("login.googleSignUpAdmin")
+        : t("login.googleSignInAdmin")
       : registerSubTab === "create"
-      ? "Create account with Google"
-      : "Continue with Google";
+      ? t("login.googleCreateAccount")
+      : t("login.googleContinue");
 
   const dividerText =
     tab === "register"
       ? registerSubTab === "create"
-        ? "or create an account"
-        : "or use your credentials"
+        ? t("login.dividerCreateAccount")
+        : t("login.dividerCredentials")
       : adminSubTab === "create"
-      ? "or create an admin account"
-      : "or use your credentials";
+      ? t("login.dividerCreateAdmin")
+      : t("login.dividerCredentials");
 
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col justify-center py-12 sm:px-6 lg:px-8">
       <div className="sm:mx-auto sm:w-full sm:max-w-md">
         <h2 className="text-center text-3xl font-extrabold text-gray-900">
-          Welcome to Internshala
+          {t("login.welcome")}
         </h2>
         <p className="mt-2 text-center text-sm text-gray-600">
-          Login or register to access internships, jobs and the community
+          {t("login.subtitle")}
         </p>
       </div>
 
@@ -310,7 +312,7 @@ export default function LoginPage() {
                       : "text-gray-500 hover:text-gray-700"
                   }`}
                 >
-                  Create Account
+                  {t("login.createAccount")}
                 </button>
                 <button
                   onClick={() => setRegisterSubTab("signin")}
@@ -320,7 +322,7 @@ export default function LoginPage() {
                       : "text-gray-500 hover:text-gray-700"
                   }`}
                 >
-                  Sign In
+                  {t("login.signIn")}
                 </button>
               </div>
 
@@ -329,7 +331,7 @@ export default function LoginPage() {
                 <form className="space-y-6" onSubmit={handleRegister}>
                   <div>
                     <label htmlFor="reg-name" className="block text-sm font-medium text-gray-700">
-                      Full Name
+                      {t("login.fullName")}
                     </label>
                     <div className="mt-1 relative rounded-md shadow-sm">
                       <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
@@ -343,13 +345,13 @@ export default function LoginPage() {
                         value={form.name}
                         onChange={handleChange}
                         className={inputCls}
-                        placeholder="Enter your full name"
+                        placeholder={t("login.fullNamePlaceholder")}
                       />
                     </div>
                   </div>
                   <div>
                     <label htmlFor="reg-email" className="block text-sm font-medium text-gray-700">
-                      Email
+                      {t("login.email")}
                     </label>
                     <div className="mt-1 relative rounded-md shadow-sm">
                       <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
@@ -363,13 +365,13 @@ export default function LoginPage() {
                         value={form.email}
                         onChange={handleChange}
                         className={inputCls}
-                        placeholder="Enter your email"
+                        placeholder={t("login.emailPlaceholder")}
                       />
                     </div>
                   </div>
                   <div>
                     <label htmlFor="reg-password" className="block text-sm font-medium text-gray-700">
-                      Password
+                      {t("login.password")}
                     </label>
                     <div className="mt-1 relative rounded-md shadow-sm">
                       <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
@@ -383,14 +385,14 @@ export default function LoginPage() {
                         value={form.password}
                         onChange={handleChange}
                         className={inputCls}
-                        placeholder="At least 6 characters"
+                        placeholder={t("login.passwordMin")}
                       />
                     </div>
                   </div>
                   <div>
                     <label htmlFor="reg-phone" className="block text-sm font-medium text-gray-700">
-                      Phone Number{" "}
-                      <span className="text-gray-400 font-normal">(optional)</span>
+                      {t("login.phone")}{" "}
+                      <span className="text-gray-400 font-normal">{t("login.optional")}</span>
                     </label>
                     <div className="mt-1 relative rounded-md shadow-sm">
                       <input
@@ -400,13 +402,13 @@ export default function LoginPage() {
                         value={form.phone}
                         onChange={handleChange}
                         className="block w-full text-black px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
-                        placeholder="Used for password reset via SMS"
+                        placeholder={t("login.phonePlaceholder")}
                       />
                     </div>
                   </div>
                   <div>
                     <button type="submit" disabled={isloading} className={submitBtn}>
-                      {isloading ? "Registering..." : "Create Account"}
+                      {isloading ? t("login.registering") : t("login.createAccount")}
                     </button>
                   </div>
                 </form>
@@ -417,7 +419,7 @@ export default function LoginPage() {
                 <form className="space-y-6" onSubmit={handleLogin}>
                   <div>
                     <label htmlFor="login-email" className="block text-sm font-medium text-gray-700">
-                      Email
+                      {t("login.email")}
                     </label>
                     <div className="mt-1 relative rounded-md shadow-sm">
                       <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
@@ -431,13 +433,13 @@ export default function LoginPage() {
                         value={form.email}
                         onChange={handleChange}
                         className={inputCls}
-                        placeholder="Enter your email"
+                        placeholder={t("login.emailPlaceholder")}
                       />
                     </div>
                   </div>
                   <div>
                     <label htmlFor="login-password" className="block text-sm font-medium text-gray-700">
-                      Password
+                      {t("login.password")}
                     </label>
                     <div className="mt-1 relative rounded-md shadow-sm">
                       <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
@@ -451,13 +453,13 @@ export default function LoginPage() {
                         value={form.password}
                         onChange={handleChange}
                         className={inputCls}
-                        placeholder="Enter your password"
+                        placeholder={t("login.passwordPlaceholder")}
                       />
                     </div>
                   </div>
                   <div>
                     <button type="submit" disabled={isloading} className={submitBtn}>
-                      {isloading ? "Signing in..." : "Sign in"}
+                      {isloading ? t("login.signingIn") : t("login.signIn")}
                     </button>
                   </div>
                   <div className="text-sm text-center">
@@ -465,7 +467,7 @@ export default function LoginPage() {
                       href="/forgot-password"
                       className="font-medium text-blue-600 hover:text-blue-700"
                     >
-                      Forgot password?
+                      {t("login.forgotPassword")}
                     </Link>
                   </div>
                 </form>
@@ -486,7 +488,7 @@ export default function LoginPage() {
                       : "text-gray-500 hover:text-gray-700"
                   }`}
                 >
-                  Create Account
+                  {t("login.createAccount")}
                 </button>
                 <button
                   onClick={() => setAdminSubTab("signin")}
@@ -496,7 +498,7 @@ export default function LoginPage() {
                       : "text-gray-500 hover:text-gray-700"
                   }`}
                 >
-                  Sign In
+                  {t("login.signIn")}
                 </button>
               </div>
 
@@ -505,7 +507,7 @@ export default function LoginPage() {
                 <form className="space-y-6" onSubmit={handleAdminLogin}>
                   <div>
                     <label htmlFor="admin-email" className="block text-sm font-medium text-gray-700">
-                      Email
+                      {t("login.email")}
                     </label>
                     <div className="mt-1 relative rounded-md shadow-sm">
                       <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
@@ -519,13 +521,13 @@ export default function LoginPage() {
                         value={form.email}
                         onChange={handleChange}
                         className={inputCls}
-                        placeholder="Enter admin email"
+                        placeholder={t("login.adminEmailPlaceholder")}
                       />
                     </div>
                   </div>
                   <div>
                     <label htmlFor="admin-signin-password" className="block text-sm font-medium text-gray-700">
-                      Password
+                      {t("login.password")}
                     </label>
                     <div className="mt-1 relative rounded-md shadow-sm">
                       <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
@@ -539,13 +541,13 @@ export default function LoginPage() {
                         value={form.password}
                         onChange={handleChange}
                         className={inputCls}
-                        placeholder="Enter admin password"
+                        placeholder={t("login.adminPasswordPlaceholder")}
                       />
                     </div>
                   </div>
                   <div>
                     <button type="submit" disabled={isloading} className={submitBtn}>
-                      {isloading ? "Signing in..." : "Sign in as Admin"}
+                      {isloading ? t("login.signingIn") : t("login.signInAsAdmin")}
                     </button>
                   </div>
                 <div className="text-sm text-center">
@@ -553,7 +555,7 @@ export default function LoginPage() {
                       href="/forgot-password"
                       className="font-medium text-blue-600 hover:text-blue-700"
                     >
-                      Forgot password?
+                      {t("login.forgotPassword")}
                     </Link>
                   </div>
                 </form>
@@ -564,7 +566,7 @@ export default function LoginPage() {
                 <form className="space-y-6" onSubmit={handleAdminRegister}>
                   <div>
                     <label htmlFor="admin-create-username" className="block text-sm font-medium text-gray-700">
-                      Admin Name
+                      {t("login.adminName")}
                     </label>
                     <div className="mt-1 relative rounded-md shadow-sm">
                       <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
@@ -578,13 +580,13 @@ export default function LoginPage() {
                         value={form.username}
                         onChange={handleChange}
                         className={inputCls}
-                        placeholder="Enter admin name"
+                        placeholder={t("login.adminNamePlaceholder")}
                       />
                     </div>
                   </div>
                   <div>
                     <label htmlFor="admin-create-email" className="block text-sm font-medium text-gray-700">
-                      Email
+                      {t("login.email")}
                     </label>
                     <div className="mt-1 relative rounded-md shadow-sm">
                       <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
@@ -598,13 +600,13 @@ export default function LoginPage() {
                         value={form.email}
                         onChange={handleChange}
                         className={inputCls}
-                        placeholder="Enter admin email"
+                        placeholder={t("login.adminEmailPlaceholder")}
                       />
                     </div>
                   </div>
                   <div>
                     <label htmlFor="admin-create-password" className="block text-sm font-medium text-gray-700">
-                      Password
+                      {t("login.password")}
                     </label>
                     <div className="mt-1 relative rounded-md shadow-sm">
                       <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
@@ -618,13 +620,13 @@ export default function LoginPage() {
                         value={form.password}
                         onChange={handleChange}
                         className={inputCls}
-                        placeholder="At least 6 characters"
+                        placeholder={t("login.passwordMin")}
                       />
                     </div>
                   </div>
                   <div>
                     <button type="submit" disabled={isloading} className={submitBtn}>
-                      {isloading ? "Creating account..." : "Create Admin Account"}
+                      {isloading ? t("login.creatingAccount") : t("login.createAdminAccount")}
                     </button>
                   </div>
                 </form>

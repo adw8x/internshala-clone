@@ -3,8 +3,10 @@ import { useRouter } from "next/router";
 import React, { useEffect, useState } from "react";
 import api from "@/lib/api";
 import { useRequireAdmin } from "@/lib/auth";
+import { useLanguage } from "@/lib/i18n";
 
 const index = () => {
+  const { t } = useLanguage();
   const router = useRouter();
   const { id } = router.query;
   const isAdmin = useRequireAdmin();
@@ -33,7 +35,7 @@ const index = () => {
       <div className="min-h-screen flex items-center justify-center">
         <Loader2 className="w-8 h-8 animate-spin text-blue-600" />
         <span className="ml-2 text-gray-600">
-          Loading application details...
+          {t("detailApplication.loading")}
         </span>
       </div>
     );
@@ -46,7 +48,7 @@ const index = () => {
             {/* Image Section */}
             <div className="relative">
               <img
-                alt="Applicant photo"
+                alt={t("detailApplication.photoAlt")}
                 className="w-full h-full object-cover"
                 src={data?.user?.photo}
               />
@@ -72,7 +74,7 @@ const index = () => {
               <div className="mb-8">
                 <div className="flex items-center mb-6">
                   <Building2 className="w-5 h-5 text-blue-600 mr-2" />
-                  <h2 className="text-sm font-medium text-gray-500">Company</h2>
+                  <h2 className="text-sm font-medium text-gray-500">{t("detailApplication.companyLabel")}</h2>
                 </div>
                 <h1 className="text-2xl font-bold text-gray-900 mb-4">
                   {data.company}
@@ -83,7 +85,7 @@ const index = () => {
                 <div className="flex items-center mb-4">
                   <FileText className="w-5 h-5 text-blue-600 mr-2" />
                   <h2 className="text-sm font-medium text-gray-500">
-                    Cover Letter
+                    {t("detailApplication.coverLetter")}
                   </h2>
                 </div>
                 <p className="text-gray-600 leading-relaxed">
@@ -96,7 +98,7 @@ const index = () => {
                   <div className="flex items-center mb-2">
                     <Calendar className="w-5 h-5 text-blue-600 mr-2" />
                     <span className="text-sm font-medium text-gray-500">
-                      Application Date
+                      {t("detailApplication.applicationDate")}
                     </span>
                   </div>
                   <p className="text-gray-900 font-semibold">
@@ -112,7 +114,7 @@ const index = () => {
                   <div className="flex items-center mb-2">
                     <User className="w-5 h-5 text-blue-600 mr-2" />
                     <span className="text-sm font-medium text-gray-500">
-                      Applied By
+                      {t("detailApplication.appliedBy")}
                     </span>
                   </div>
                   <p className="text-gray-900 font-semibold">

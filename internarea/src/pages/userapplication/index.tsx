@@ -12,6 +12,7 @@ import Link from "next/link";
 import api from "@/lib/api";
 import { selectuser } from "@/Feature/Userslice";
 import { useSelector } from "react-redux";
+import { useLanguage } from "@/lib/i18n";
 const Applications = [
   {
     _id: "1",
@@ -50,6 +51,7 @@ const getStatusColor = (status: any) => {
   }
 };
 const index = () => {
+  const { t } = useLanguage();
   const [searchTerm, setsearchTerm] = useState("");
   const [filter, setFilter] = useState("all");
   const user=useSelector(selectuser)
@@ -93,9 +95,9 @@ const index = () => {
         <div className="bg-white rounded-lg shadow-sm">
           {/* Header */}
           <div className="border-b border-gray-200 px-6 py-4">
-            <h1 className="text-2xl font-bold text-gray-900">My Applications</h1>
+            <h1 className="text-2xl font-bold text-gray-900">{t("userApplication.title")}</h1>
             <p className="mt-1 text-sm text-gray-500">
-              Track and manage your job and intenrhsip applications
+              {t("userApplication.subtitle")}
             </p>
           </div>
 
@@ -108,7 +110,7 @@ const index = () => {
                     type="text"
                     value={searchTerm}
                     onChange={(e) => setsearchTerm(e.target.value)}
-                    placeholder="Search by company, category, or applicant..."
+                    placeholder={t("userApplication.searchPlaceholder")}
                     className="text-black w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                   />
                   <Mail className="absolute top-3 left-3 text-gray-400" />
@@ -123,7 +125,7 @@ const index = () => {
                       : "bg-gray-100 text-gray-800"
                   }`}
                 >
-                  All
+                  {t("userApplication.filterAll")}
                 </button>
                 <button
                   onClick={() => setFilter("pending")}
@@ -133,7 +135,7 @@ const index = () => {
                       : "bg-gray-100 text-gray-800"
                   }`}
                 >
-                  Pending
+                  {t("userApplication.filterPending")}
                 </button>
                 <button
                   onClick={() => setFilter("accepted")}
@@ -143,7 +145,7 @@ const index = () => {
                       : "bg-gray-100 text-gray-800"
                   }`}
                 >
-                  Approved
+                  {t("userApplication.filterApproved")}
                 </button>
                 <button
                   onClick={() => setFilter("rejected")}
@@ -153,7 +155,7 @@ const index = () => {
                       : "bg-gray-100 text-gray-800"
                   }`}
                 >
-                  Rejected
+                  {t("userApplication.filterRejected")}
                 </button>
               </div>
             </div>
@@ -167,25 +169,25 @@ const index = () => {
                     scope="col"
                     className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
                   >
-                    Company & Category
+                    {t("userApplication.colCompany")}
                   </th>
                   <th
                     scope="col"
                     className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
                   >
-                    Applicant
+                    {t("userApplication.colApplicant")}
                   </th>
                   <th
                     scope="col"
                     className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
                   >
-                    Applied Date
+                    {t("userApplication.colDate")}
                   </th>
                   <th
                     scope="col"
                     className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
                   >
-                    Status
+                    {t("userApplication.colStatus")}
                   </th>
                 </tr>
               </thead>

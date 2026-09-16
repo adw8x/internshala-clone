@@ -4,6 +4,7 @@ import { useRouter } from "next/router";
 import Link from "next/link";
 import React, { useEffect, useState } from "react";
 import { toast } from "react-toastify";
+import { useLanguage } from "@/lib/i18n";
 
 interface ResumeFull {
   _id: string;
@@ -16,6 +17,7 @@ interface ResumeFull {
 }
 
 const ResumeViewPage = () => {
+  const { t } = useLanguage();
   const router = useRouter();
   const { id } = router.query;
   const [resume, setResume] = useState<ResumeFull | null>(null);
@@ -35,7 +37,7 @@ const ResumeViewPage = () => {
   if (loading) {
     return (
       <div className="min-h-screen bg-gray-50 py-12 text-center text-gray-500">
-        Loading resume...
+        {t("resumeView.loading")}
       </div>
     );
   }
@@ -43,12 +45,12 @@ const ResumeViewPage = () => {
   if (notFound || !resume) {
     return (
       <div className="min-h-screen bg-gray-50 py-12 text-center">
-        <p className="text-gray-600 mb-6">Resume not found.</p>
+        <p className="text-gray-600 mb-6">{t("resumeView.notFound")}</p>
         <Link
           href="/resume"
           className="inline-flex items-center gap-2 text-blue-600 hover:underline"
         >
-          <ArrowLeft className="h-4 w-4" /> Back to Resume Builder
+          <ArrowLeft className="h-4 w-4" /> {t("resumeView.back")}
         </Link>
       </div>
     );
@@ -61,11 +63,16 @@ const ResumeViewPage = () => {
           <div className="flex items-center gap-3">
             <FileText className="h-6 w-6 text-blue-600" />
             <div>
-              <p className="font-semibold text-gray-900">{resume.name}&apos;s Resume</p>
+              <p className="font-semibold text-gray-900">{t("resumeView.title", { name: resume.name })}</p>
               <p className="text-xs text-gray-500">
                 {resume.status === "paid"
-                  ? `Paid ₹${resume.amountINR} · Generated ${resume.paidAt ? new Date(resume.paidAt).toLocaleString("en-IN") : ""}`
-                  : "Awaiting payment — resume not generated"}
+                  ? t("resumeView.paidInfo", {
+                      amount: resume.amountINR,
+                      date: resume.paidAt
+                        ? new Date(resume.paidAt).toLocaleString("en-IN")
+                        : "",
+                    })
+                  : t("resumeView.awaitingPayment")}
               </p>
             </div>
           </div>
@@ -76,7 +83,7 @@ const ResumeViewPage = () => {
                   onClick={() => window.print()}
                   className="inline-flex items-center gap-2 bg-blue-600 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-blue-700"
                 >
-                  <Printer className="h-4 w-4" /> Save as PDF
+                  <Printer className="h-4 w-4" /> {t("resumeView.saveAsPdf")}
                 </button>
               </>
             )}
@@ -84,7 +91,7 @@ const ResumeViewPage = () => {
               href="/resume"
               className="inline-flex items-center gap-2 text-gray-600 hover:text-gray-900 text-sm font-medium bg-gray-100 px-4 py-2 rounded-lg"
             >
-              <ArrowLeft className="h-4 w-4" /> Builder
+              <ArrowLeft className="h-4 w-4" /> {t("resumeView.builder")}
             </Link>
           </div>
         </div>
@@ -93,7 +100,7 @@ const ResumeViewPage = () => {
           <div className="bg-white rounded-xl shadow overflow-hidden">
             <iframe
               srcDoc={resume.generatedHtml}
-              title={`${resume.name} Resume`}
+              title={t("resumeView.title", { name: resume.name })}
               className="w-full min-h-[1000px]"
               style={{ border: "none" }}
             />
@@ -101,14 +108,13 @@ const ResumeViewPage = () => {
         ) : (
           <div className="bg-white rounded-xl shadow p-10 text-center">
             <p className="text-gray-600 mb-4">
-              This resume has not been generated yet. The payment for this resume
-              is still pending or the resume was created before payment.
+              {t("resumeView.notGenerated")}
             </p>
             <Link
               href="/resume"
               className="inline-flex items-center gap-2 text-blue-600 hover:underline"
             >
-              <ArrowLeft className="h-4 w-4" /> Back to Resume Builder
+              <ArrowLeft className="h-4 w-4" /> {t("resumeView.back")}
             </Link>
           </div>
         )}

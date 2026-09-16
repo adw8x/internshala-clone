@@ -17,6 +17,7 @@ import { useRouter } from "next/router";
 import React, { useEffect, useState } from "react";
 import { useSelector } from "react-redux";
 import { toast } from "react-toastify";
+import { useLanguage } from "@/lib/i18n";
 
 interface SubscriptionStatus {
   planId: string;
@@ -102,6 +103,7 @@ const emptyExperience = (): ExpRow => ({
 });
 
 const ResumePage = () => {
+  const { t } = useLanguage();
   const user = useSelector(selectuser);
   const router = useRouter();
   const [subStatus, setSubStatus] = useState<SubscriptionStatus | null>(null);
@@ -163,7 +165,7 @@ const ResumePage = () => {
         setPhoto(dataUrl);
         setPhotoPreview(dataUrl);
       })
-      .catch(() => toast.error("Please choose a valid image file"));
+      .catch(() => toast.error(t("resume.invalidImage")));
   };
 
   const handleSendOtp = async () => {
@@ -172,10 +174,10 @@ const ResumePage = () => {
     try {
       const res = await api.post("/resume/send-otp", { email: user.email });
       setOtpSent(true);
-      toast.success(res.data.message || "OTP sent to your email");
+      toast.success(res.data.message || t("resume.otpSent"));
     } catch (err: any) {
       toast.error(
-        err?.response?.data?.error || "Could not send OTP. Please try again."
+        err?.response?.data?.error || t("resume.otpSendFailed")
       );
     } finally {
       setSendingOtp(false);
@@ -184,7 +186,7 @@ const ResumePage = () => {
 
   const handleVerifyOtp = async () => {
     if (!user?.email || otpCode.trim().length !== 6) {
-      toast.error("Please enter the 6-digit OTP");
+      toast.error(t("resume.otpEnter"));
       return;
     }
     setVerifyingOtp(true);
@@ -194,9 +196,9 @@ const ResumePage = () => {
         code: otpCode.trim(),
       });
       setOtpVerified(true);
-      toast.success(res.data.message || "Email verified");
+      toast.success(res.data.message || t("resume.emailVerified"));
     } catch (err: any) {
-      toast.error(err?.response?.data?.error || "OTP verification failed");
+      toast.error(err?.response?.data?.error || t("resume.otpVerifyFailed"));
     } finally {
       setVerifyingOtp(false);
     }
@@ -204,7 +206,7 @@ const ResumePage = () => {
 
   const handlePay = async () => {
     if (!user?.email) {
-      toast.error("Please sign in");
+      toast.error(t("resume.signInRequired"));
       return;
     }
     setPaying(true);
@@ -213,7 +215,7 @@ const ResumePage = () => {
         "https://checkout.razorpay.com/v1/checkout.js"
       );
       if (!loaded) {
-        toast.error("Could not load payment gateway. Please try again.");
+        toast.error(t("resume.gatewayFailed"));
         return;
       }
 
@@ -238,8 +240,8 @@ const ResumePage = () => {
         key,
         amount,
         currency,
-        name: "Internshala Clone",
-        description: "Professional Resume - Rs. 50",
+        name: t("resume.razorpayName"),
+        description: t("resume.razorpayDescription"),
         order_id: orderId,
         prefill: { email: user.email, name: name || user.name },
         handler: async (response: any) => {
@@ -252,9 +254,9 @@ const ResumePage = () => {
               email: user.email,
             });
             setGeneratedId(verifyRes.data.resumeId);
-            toast.success(verifyRes.data.message || "Resume generated successfully");
+            toast.success(verifyRes.data.message || t("resume.generated"));
           } catch (verifyErr: any) {
-            toast.error(verifyErr?.response?.data?.error || "Payment not verified");
+            toast.error(verifyErr?.response?.data?.error || t("resume.paymentNotVerified"));
           }
         },
         modal: {
@@ -263,13 +265,13 @@ const ResumePage = () => {
       });
 
       razorpay.on("payment.failed", () => {
-        toast.error("Payment failed. Please try again.");
+        toast.error(t("resume.paymentFailed"));
         setPaying(false);
       });
 
       razorpay.open();
     } catch (err: any) {
-      toast.error(err?.response?.data?.error || "Could not start payment. Please try again.");
+      toast.error(err?.response?.data?.error || t("resume.paymentStartFailed"));
       setPaying(false);
     }
   };
@@ -279,16 +281,15 @@ const ResumePage = () => {
       <div className="min-h-screen bg-gray-50 py-20">
         <div className="max-w-xl mx-auto text-center bg-white rounded-2xl shadow-lg p-10">
           <Lock className="h-12 w-12 text-gray-300 mx-auto mb-4" />
-          <h1 className="text-2xl font-bold text-gray-900 mb-2">Resume Builder</h1>
+          <h1 className="text-2xl font-bold text-gray-900 mb-2">{t("resume.title")}</h1>
           <p className="text-gray-600 mb-6">
-            Sign in to create a professional resume that will be attached to your
-            internship applications.
+            {t("resume.loginPrompt")}
           </p>
           <Link
             href="/"
             className="inline-block bg-blue-600 text-white px-6 py-3 rounded-lg font-medium hover:bg-blue-700"
           >
-            Sign In
+            {t("resume.signIn")}
           </Link>
         </div>
       </div>
@@ -303,32 +304,29 @@ const ResumePage = () => {
         <div className="text-center mb-8">
           <div className="flex items-center justify-center gap-2 mb-2">
             <FileText className="h-8 w-8 text-blue-600" />
-            <h1 className="text-3xl font-bold text-gray-900">Resume Builder</h1>
+            <h1 className="text-3xl font-bold text-gray-900">{t("resume.title")}</h1>
           </div>
           <p className="text-gray-600 max-w-2xl mx-auto">
-            Fill in your details and we&apos;ll generate a professional resume for
-            you. Premium plans only · Rs. 50 per resume · Automatically attached
-            to your internship applications.
+            {t("resume.description")}
           </p>
         </div>
 
         {loadingStatus ? (
-          <p className="text-center text-gray-500">Checking your plan...</p>
+          <p className="text-center text-gray-500">{t("resume.checkingPlan")}</p>
         ) : premium === false ? (
           <div className="bg-white rounded-2xl shadow-lg p-10 text-center border-2 border-yellow-200">
             <Crown className="h-10 w-10 text-yellow-500 mx-auto mb-3" />
             <h2 className="text-xl font-bold text-gray-900 mb-2">
-              Premium Plan Required
+              {t("resume.premiumRequired")}
             </h2>
             <p className="text-gray-600 mb-6">
-              The Resume Builder is available only on a premium plan (Bronze,
-              Silver, or Gold). Upgrade now to unlock it.
+              {t("resume.premiumDescription")}
             </p>
             <Link
               href="/plans"
               className="inline-block bg-blue-600 text-white px-8 py-3 rounded-lg font-medium hover:bg-blue-700"
             >
-              View Plans
+              {t("resume.viewPlans")}
             </Link>
           </div>
         ) : (
@@ -338,7 +336,7 @@ const ResumePage = () => {
               {resumes.length > 0 && (
                 <div className="mb-8">
                   <h2 className="text-lg font-semibold text-gray-900 mb-3">
-                    My Resumes
+                    {t("resume.myResumes")}
                   </h2>
                   <div className="space-y-2">
                     {resumes.map((r) => (
@@ -351,7 +349,7 @@ const ResumePage = () => {
                           <div>
                             <p className="font-medium text-gray-900">{r.name}</p>
                             <p className="text-xs text-gray-500">
-                              {r.status === "paid" ? "Paid · Ready" : "Awaiting payment"} · ₹{r.amountINR} ·{" "}
+                              {r.status === "paid" ? t("resume.paidReady") : t("resume.awaitingPayment")} · ₹{r.amountINR} ·{" "}
                               {new Date(r.createdAt).toLocaleDateString("en-IN")}
                             </p>
                           </div>
@@ -361,7 +359,7 @@ const ResumePage = () => {
                             href={`/resume/${r._id}`}
                             className="text-blue-600 hover:underline text-sm font-medium"
                           >
-                            View / Print
+                            {t("resume.viewPrint")}
                           </Link>
                         )}
                       </div>
@@ -375,21 +373,20 @@ const ResumePage = () => {
                   <div className="flex items-center gap-2 text-green-800">
                     <Check className="h-5 w-5" />
                     <span className="font-medium">
-                      Resume generated successfully — attached to your profile for
-                      future applications.
+                      {t("resume.generatedBanner")}
                     </span>
                   </div>
                   <Link
                     href={`/resume/${generatedId}`}
                     className="bg-green-600 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-green-700"
                   >
-                    View Resume
+                    {t("resume.viewResume")}
                   </Link>
                 </div>
               )}
 
               <h2 className="text-lg font-semibold text-gray-900 mb-4">
-                Enter Your Details
+                {t("resume.enterDetails")}
               </h2>
 
               {/* Photo */}
@@ -398,7 +395,7 @@ const ResumePage = () => {
                   {photoPreview ? (
                     <img
                       src={photoPreview}
-                      alt="Preview"
+                      alt={t("resume.photoPreview")}
                       className="w-full h-full object-cover"
                     />
                   ) : (
@@ -407,7 +404,7 @@ const ResumePage = () => {
                 </div>
                 <label className="inline-flex items-center gap-2 bg-white border border-gray-300 rounded-lg px-4 py-2 cursor-pointer hover:bg-gray-50">
                   <Upload className="h-4 w-4 text-gray-600" />
-                  <span className="text-sm text-gray-700">Upload Photo</span>
+                  <span className="text-sm text-gray-700">{t("resume.uploadPhoto")}</span>
                   <input
                     type="file"
                     accept="image/*"
@@ -419,7 +416,7 @@ const ResumePage = () => {
 
               {/* Form fields */}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-                <Field label="Full Name *">
+                <Field label={t("resume.fullName")}>
                   <input
                     type="text"
                     value={name}
@@ -427,7 +424,7 @@ const ResumePage = () => {
                     className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 text-black"
                   />
                 </Field>
-                <Field label="Registered Email *">
+                <Field label={t("resume.registeredEmail")}>
                   <div className="relative">
                     <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
                     <input
@@ -438,7 +435,7 @@ const ResumePage = () => {
                     />
                   </div>
                 </Field>
-                <Field label="Phone">
+                <Field label={t("resume.phone")}>
                   <input
                     type="tel"
                     value={phone}
@@ -446,7 +443,7 @@ const ResumePage = () => {
                     className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 text-black"
                   />
                 </Field>
-                <Field label="Address">
+                <Field label={t("resume.address")}>
                   <input
                     type="text"
                     value={address}
@@ -457,24 +454,24 @@ const ResumePage = () => {
               </div>
 
               <div className="mb-4">
-                <Field label="Professional Summary">
+                <Field label={t("resume.summary")}>
                   <textarea
                     value={summary}
                     onChange={(e) => setSummary(e.target.value)}
                     rows={3}
-                    placeholder="Briefly describe yourself, your strengths, and career goals..."
+                    placeholder={t("resume.summaryPlaceholder")}
                     className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 text-black"
                   ></textarea>
                 </Field>
               </div>
 
               <div className="mb-4">
-                <Field label="Skills (comma separated)">
+                <Field label={t("resume.skills")}>
                   <input
                     type="text"
                     value={skillsText}
                     onChange={(e) => setSkillsText(e.target.value)}
-                    placeholder="React, Node.js, MongoDB, Communication..."
+                    placeholder={t("resume.skillsPlaceholder")}
                     className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 text-black"
                   />
                 </Field>
@@ -484,7 +481,7 @@ const ResumePage = () => {
               <div className="mb-6">
                 <div className="flex items-center gap-2 mb-2">
                   <GraduationCap className="h-5 w-5 text-blue-600" />
-                  <h3 className="font-semibold text-gray-900">Qualifications</h3>
+                  <h3 className="font-semibold text-gray-900">{t("resume.qualifications")}</h3>
                 </div>
                 {education.map((edu, i) => (
                   <div key={i} className="grid grid-cols-1 md:grid-cols-4 gap-3 mb-3">
@@ -496,7 +493,7 @@ const ResumePage = () => {
                         next[i] = { ...next[i], degree: e.target.value };
                         setEducation(next);
                       }}
-                      placeholder="Degree / Course *"
+                      placeholder={t("resume.degreePlaceholder")}
                       className="px-3 py-2 border rounded-lg text-sm text-black"
                     />
                     <input
@@ -507,7 +504,7 @@ const ResumePage = () => {
                         next[i] = { ...next[i], institution: e.target.value };
                         setEducation(next);
                       }}
-                      placeholder="Institution"
+                      placeholder={t("resume.institutionPlaceholder")}
                       className="px-3 py-2 border rounded-lg text-sm text-black"
                     />
                     <input
@@ -518,7 +515,7 @@ const ResumePage = () => {
                         next[i] = { ...next[i], year: e.target.value };
                         setEducation(next);
                       }}
-                      placeholder="Year"
+                      placeholder={t("resume.yearPlaceholder")}
                       className="px-3 py-2 border rounded-lg text-sm text-black"
                     />
                     <div className="flex gap-2">
@@ -530,7 +527,7 @@ const ResumePage = () => {
                           next[i] = { ...next[i], percentage: e.target.value };
                           setEducation(next);
                         }}
-                        placeholder="% / CGPA"
+                        placeholder={t("resume.percentagePlaceholder")}
                         className="flex-1 px-3 py-2 border rounded-lg text-sm text-black"
                       />
                       <button
@@ -550,7 +547,7 @@ const ResumePage = () => {
                   onClick={() => setEducation([...education, emptyEducation()])}
                   className="inline-flex items-center gap-1 text-blue-600 hover:text-blue-700 text-sm font-medium"
                 >
-                  <Plus className="h-4 w-4" /> Add qualification
+                  <Plus className="h-4 w-4" /> {t("resume.addQualification")}
                 </button>
               </div>
 
@@ -558,7 +555,7 @@ const ResumePage = () => {
               <div className="mb-6">
                 <div className="flex items-center gap-2 mb-2">
                   <Briefcase className="h-5 w-5 text-blue-600" />
-                  <h3 className="font-semibold text-gray-900">Experience</h3>
+                  <h3 className="font-semibold text-gray-900">{t("resume.experience")}</h3>
                 </div>
                 {experience.map((exp, i) => (
                   <div key={i} className="border border-gray-200 rounded-lg p-3 mb-3 space-y-2">
@@ -571,7 +568,7 @@ const ResumePage = () => {
                           next[i] = { ...next[i], company: e.target.value };
                           setExperience(next);
                         }}
-                        placeholder="Company"
+                        placeholder={t("resume.companyPlaceholder")}
                         className="px-3 py-2 border rounded-lg text-sm text-black"
                       />
                       <input
@@ -582,7 +579,7 @@ const ResumePage = () => {
                           next[i] = { ...next[i], role: e.target.value };
                           setExperience(next);
                         }}
-                        placeholder="Role"
+                        placeholder={t("resume.rolePlaceholder")}
                         className="px-3 py-2 border rounded-lg text-sm text-black"
                       />
                       <input
@@ -593,7 +590,7 @@ const ResumePage = () => {
                           next[i] = { ...next[i], duration: e.target.value };
                           setExperience(next);
                         }}
-                        placeholder="Duration (e.g. Jan 2025 - Jun 2025)"
+                        placeholder={t("resume.durationPlaceholder")}
                         className="px-3 py-2 border rounded-lg text-sm text-black"
                       />
                     </div>
@@ -606,7 +603,7 @@ const ResumePage = () => {
                           setExperience(next);
                         }}
                         rows={2}
-                        placeholder="What did you do there?"
+                        placeholder={t("resume.descriptionPlaceholder")}
                         className="flex-1 px-3 py-2 border rounded-lg text-sm text-black"
                       ></textarea>
                       <button
@@ -626,7 +623,7 @@ const ResumePage = () => {
                   onClick={() => setExperience([...experience, emptyExperience()])}
                   className="inline-flex items-center gap-1 text-blue-600 hover:text-blue-700 text-sm font-medium"
                 >
-                  <Plus className="h-4 w-4" /> Add experience
+                  <Plus className="h-4 w-4" /> {t("resume.addExperience")}
                 </button>
               </div>
 
@@ -635,12 +632,10 @@ const ResumePage = () => {
                 {!otpVerified ? (
                   <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
                     <h3 className="font-semibold text-blue-900 mb-1">
-                      Step 1 · Verify Your Email
+                      {t("resume.step1")}
                     </h3>
                     <p className="text-sm text-blue-800 mb-3">
-                      We&apos;ll send a one-time password (OTP) to{" "}
-                      <strong>{user.email}</strong> before you can pay for your
-                      resume.
+                      {t("resume.otpIntro", { email: user.email })}
                     </p>
                     {!otpSent ? (
                       <button
@@ -648,7 +643,7 @@ const ResumePage = () => {
                         disabled={sendingOtp || !name.trim()}
                         className="bg-blue-600 text-white px-5 py-2 rounded-lg font-medium hover:bg-blue-700 disabled:opacity-50"
                       >
-                        {sendingOtp ? "Sending..." : "Send OTP"}
+                        {sendingOtp ? t("resume.sending") : t("resume.sendOtp")}
                       </button>
                     ) : (
                       <div className="flex flex-col sm:flex-row gap-3">
@@ -658,7 +653,7 @@ const ResumePage = () => {
                           maxLength={6}
                           value={otpCode}
                           onChange={(e) => setOtpCode(e.target.value.replace(/\D/g, ""))}
-                          placeholder="Enter 6-digit OTP"
+                          placeholder={t("resume.otpPlaceholder")}
                           className="w-48 px-3 py-2 border rounded-lg text-center text-lg tracking-widest text-black"
                         />
                         <button
@@ -666,20 +661,20 @@ const ResumePage = () => {
                           disabled={verifyingOtp || otpCode.length !== 6}
                           className="bg-blue-600 text-white px-5 py-2 rounded-lg font-medium hover:bg-blue-700 disabled:opacity-50"
                         >
-                          {verifyingOtp ? "Verifying..." : "Verify OTP"}
+                          {verifyingOtp ? t("resume.verifying") : t("resume.verifyOtp")}
                         </button>
                         <button
                           onClick={handleSendOtp}
                           disabled={sendingOtp}
                           className="text-blue-600 hover:underline text-sm font-medium px-2"
                         >
-                          Resend
+                          {t("resume.resend")}
                         </button>
                       </div>
                     )}
                     {otpSent && !otpVerified && (
                       <p className="text-xs text-blue-600 mt-2">
-                        OTP expires in 5 minutes. Check your inbox (and spam).
+                        {t("resume.otpExpiry")}
                       </p>
                     )}
                   </div>
@@ -687,7 +682,7 @@ const ResumePage = () => {
                   <div className="bg-green-50 border border-green-200 rounded-lg p-4 mb-4 flex items-center gap-2">
                     <Check className="h-5 w-5 text-green-600" />
                     <span className="text-green-800 font-medium">
-                      Email verified. You can now pay and generate your resume.
+                      {t("resume.otpVerified")}
                     </span>
                   </div>
                 )}
@@ -698,14 +693,13 @@ const ResumePage = () => {
                   className="w-full bg-blue-600 text-white py-3 rounded-lg font-semibold hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   {paying
-                    ? "Processing..."
+                    ? t("resume.processing")
                     : latestPaid && latestPaid.status === "paid" && !generatedId
-                    ? "Generate Another Resume - Rs. 50"
-                    : "Pay Rs. 50 & Generate Resume"}
+                    ? t("resume.generateAnother")
+                    : t("resume.payAndGenerate")}
                 </button>
                 <p className="text-center text-xs text-gray-500 mt-3">
-                  Secure payment via Razorpay. Your resume is automatically
-                  attached to your profile for future internship applications.
+                  {t("resume.secureNote")}
                 </p>
               </div>
             </div>
