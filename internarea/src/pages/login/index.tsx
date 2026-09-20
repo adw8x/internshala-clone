@@ -11,6 +11,7 @@ import { setAdmin } from "@/lib/auth";
 import { signInWithGoogle } from "@/lib/googleLogin";
 import { login } from "@/Feature/Userslice";
 import { useLanguage } from "@/lib/i18n";
+import LoginOtpModal from "@/Components/LoginOtpModal";
 
 type Tab = "register" | "admin";
 
@@ -35,6 +36,26 @@ export default function LoginPage() {
   const [isloading, setIsloading] = useState(false);
   const [adminSubTab, setAdminSubTab] = useState<"signin" | "create">("create");
   const [registerSubTab, setRegisterSubTab] = useState<"signin" | "create">("signin");
+  const [otpPending, setOtpPending] = useState<string | null>(null);
+  const [otpGoogle, setOtpGoogle] = useState<{ uid: string; name: string; photo: string | null } | null>(null);
+
+  const handleOtpVerified = async (userData: { email: string; name: string }) => {
+    setOtpPending(null);
+    if (otpGoogle) {
+      dispatch(
+        login({
+          uid: otpGoogle.uid,
+          name: otpGoogle.name,
+          email: userData.email,
+          photo: otpGoogle.photo ?? "",
+        })
+      );
+      toast.success(t("login.loggedIn"));
+      goHome();
+      return;
+    }
+    await finalizeLogin(userData);
+  };
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
@@ -90,33 +111,45 @@ export default function LoginPage() {
     }
     setIsloading(true);
     try {
-      const res = await api.post("/auth/login", {
-        email: form.email,
-        password: form.password,
-      });
-      try {
-        await signInWithEmailAndPassword(auth, form.email, form.password);
-      } catch {
-        try {
-          const cred = await createUserWithEmailAndPassword(auth, form.email, form.password);
-          await updateProfile(cred.user, { displayName: res.data.user.name });
-        } catch {}
-      }
-      dispatch(
-        login({
-          uid: res.data.user.email,
-          name: res.data.user.name,
-          email: res.data.user.email,
-          photo: "",
-        })
+      const res = await api.post(
+        "/auth/login",
+        {
+          email: form.email,
+          password: form.password,
+        },
+        { headers: { "x-user-agent": navigator.userAgent } }
       );
-      toast.success(t("login.loggedIn"));
-      goHome();
+      if (res.data.otpRequired) {
+        setOtpPending(res.data.email);
+        return;
+      }
+      await finalizeLogin(res.data.user);
     } catch (error: any) {
       toast.error(error?.response?.data?.error || error?.message || t("toast.loginFailed"));
     } finally {
       setIsloading(false);
     }
+  };
+
+  const finalizeLogin = async (userData: { email: string; name: string }) => {
+    try {
+      await signInWithEmailAndPassword(auth, userData.email, form.password);
+    } catch {
+      try {
+        const cred = await createUserWithEmailAndPassword(auth, userData.email, form.password);
+        await updateProfile(cred.user, { displayName: userData.name });
+      } catch {}
+    }
+    dispatch(
+      login({
+        uid: userData.email,
+        name: userData.name,
+        email: userData.email,
+        photo: "",
+      })
+    );
+    toast.success(t("login.loggedIn"));
+    goHome();
   };
 
   const handleAdminLogin = async (e: React.FormEvent) => {
@@ -184,6 +217,11 @@ export default function LoginPage() {
     setIsloading(true);
     try {
       const result = await signInWithGoogle();
+      if (result.otpRequired) {
+        setOtpGoogle({ uid: result.uid, name: result.name, photo: result.photo });
+        setOtpPending(result.email);
+        return;
+      }
       if (result.role === "admin") {
         setAdmin({ email: result.email, name: result.name });
         toast.success(t("toast.loggedInAsAdmin"));
@@ -237,6 +275,7 @@ export default function LoginPage() {
       : t("login.dividerCredentials");
 
   return (
+    <>
     <div className="min-h-screen bg-gray-50 flex flex-col justify-center py-12 sm:px-6 lg:px-8">
       <div className="sm:mx-auto sm:w-full sm:max-w-md">
         <h2 className="text-center text-3xl font-extrabold text-gray-900">
@@ -636,5 +675,17 @@ export default function LoginPage() {
         </div>
       </div>
     </div>
+
+    {otpPending && (
+      <LoginOtpModal
+        email={otpPending}
+        onClose={() => {
+          setOtpPending(null);
+          setOtpGoogle(null);
+        }}
+        onVerified={handleOtpVerified}
+      />
+    )}
+    </>
   );
 }
