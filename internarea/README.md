@@ -2,7 +2,14 @@ This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-
 
 ## Getting Started
 
-First, run the development server:
+First, set up the environment file (real credentials are never committed):
+
+```bash
+copy .env.local.example .env.local   # Windows
+cp .env.local.example .env.local     # macOS/Linux
+```
+
+Fill in the required values: `DATABASE_URL` (MongoDB Atlas or local), Razorpay test keys, and Gmail SMTP + App Password (for OTP / password-reset emails). Then run the development server:
 
 ```bash
 npm run dev

@@ -113,19 +113,29 @@ The application is served by the Next.js API routes in `internarea/src/pages/api
 
 ### Environment Variables
 
-Create a `.env.local` file in the `internarea` directory:
-```
-NEXT_PUBLIC_API_BASE_URL=/api
-```
+Real credentials are never committed. Copy the example files and fill in your own values.
 
-`DATABASE_URL` (MongoDB Atlas connection string) is set via the Vercel environment for the deployed `internarea` project. Set the same variable locally (e.g. in `internarea/.env.local`) to run the Next.js API routes against MongoDB in development. The `DATABASE_URL` in `backend/.env` is used only by the legacy Express server.
+**Frontend (`internarea/`):**
+```bash
+copy .env.local.example .env.local   # Windows
+cp .env.local.example .env.local     # macOS/Linux
+```
+Required: `DATABASE_URL` (MongoDB Atlas or local), Razorpay test keys (`RAZORPAY_KEY_ID`, `RAZORPAY_KEY_SECRET`), and Gmail SMTP + App Password (`SMTP_USER`, `SMTP_PASS`) for OTP / password-reset emails.
+
+**Backend (`backend/`):**
+```bash
+copy .env.example .env               # Windows
+cp .env.example .env                 # macOS/Linux
+```
+Required: `DATABASE_URL` (used by the legacy Express server).
 
 ### Testing
 To test the application locally:
-1. Start MongoDB
-2. Provide `DATABASE_URL` in `internarea/.env.local`
-3. Start the frontend development server from the repo root: `npm run dev` (or `npm --prefix internarea run dev`)
-4. Visit `http://localhost:3000` in your browser
+1. Provide `DATABASE_URL` in `internarea/.env.local` (and `backend/.env` for the legacy server)
+2. Start the frontend development server from the repo root: `npm run dev` (or `npm --prefix internarea run dev`)
+3. Visit `http://localhost:3000` in your browser
+
+To start both the backend and frontend at once, run `start_servers.bat` (backend on `:5000`, frontend on `:3000`).
 
 ## Project Structure
 
