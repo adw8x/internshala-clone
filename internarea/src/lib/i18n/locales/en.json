@@ -134,7 +134,9 @@
     "loggedIn": "Logged in successfully",
     "invalidAdminCredentials": "Invalid admin credentials",
     "adminAccountCreated": "Admin account created. You can now sign in.",
-    "createAdminFailed": "Failed to create admin account"
+    "createAdminFailed": "Failed to create admin account",
+    "otpTitle": "Verify your login",
+    "otpDescription": "For your security, we sent a one-time code to your email. Enter it below to complete the login."
   },
   "adminLogin": {
     "title": "Admin Login",
@@ -477,7 +479,19 @@
     "cancel": "Cancel",
     "deleting": "Deleting...",
     "deleteConfirm": "Yes, Delete My Account",
-    "deleteFailed": "Failed to delete account. Please try again."
+    "deleteFailed": "Failed to delete account. Please try again.",
+    "loginHistory": "Login History",
+    "noLoginHistory": "No login activity recorded yet.",
+    "historyTime": "Time",
+    "historyBrowser": "Browser",
+    "historyOs": "Operating System",
+    "historyDevice": "Device",
+    "historyIp": "IP Address",
+    "historyStatus": "Status",
+    "historyStatusSuccess": "Success",
+    "historyStatusBlocked": "Blocked",
+    "historyStatusPending": "Pending",
+    "historyStatusFailed": "Failed"
   },
   "resume": {
     "title": "Resume Builder",

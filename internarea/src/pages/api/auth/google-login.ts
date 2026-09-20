@@ -1,6 +1,9 @@
 import type { NextApiRequest, NextApiResponse } from "next";
 import { connectToDatabase } from "@/lib/db";
 import Account from "@/lib/models/Account";
+import { recordLoginAttempt, environmentFromRequest } from "@/lib/loginLog";
+import { isLoginWindowOpen } from "@/lib/loginWindow";
+import { isChrome } from "@/lib/device";
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   if (req.method !== "POST") return res.status(405).json({ error: "Method not allowed" });
@@ -8,9 +11,25 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   try {
     await connectToDatabase();
     const { email, name, photo, firebaseUid } = req.body;
+    const normalized = String(email || "").toLowerCase().trim();
 
     if (!email) {
       return res.status(400).json({ error: "Email is required" });
+    }
+
+    const env = environmentFromRequest(req);
+
+    // Mobile access is allowed only within the 10 AM - 1 PM IST window
+    if (env.deviceType === "mobile" && !isLoginWindowOpen()) {
+      await recordLoginAttempt(req, {
+        email: normalized,
+        status: "blocked",
+        reason: "mobile-outside-window",
+        env,
+      });
+      return res.status(403).json({
+        error: "Mobile login is only allowed between 10:00 AM and 1:00 PM IST.",
+      });
     }
 
     let account = await Account.findOne({ email: String(email).toLowerCase() });
@@ -45,6 +64,13 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       await account.save();
     }
 
+    const ua = Array.isArray(req.headers["x-user-agent"]) ? req.headers["x-user-agent"][0] : req.headers["x-user-agent"];
+    if (isChrome(String(ua || ""))) {
+      await recordLoginAttempt(req, { email: normalized, status: "pending", reason: "chrome-otp-required", env });
+      return res.status(200).json({ otpRequired: true, email: normalized });
+    }
+
+    await recordLoginAttempt(req, { email: normalized, status: "success", env });
     res.json({
       user: {
         email: account.email,

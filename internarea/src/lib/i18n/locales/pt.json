@@ -134,7 +134,9 @@
     "loggedIn": "Login realizado com sucesso",
     "invalidAdminCredentials": "Credenciais de administrador inválidas",
     "adminAccountCreated": "Conta de administrador criada. Você já pode fazer login.",
-    "createAdminFailed": "Falha ao criar conta de administrador"
+    "createAdminFailed": "Falha ao criar conta de administrador",
+    "otpTitle": "Verifique seu login",
+    "otpDescription": "Por segurança, enviamos um código de uso único para seu e-mail. Digite-o abaixo para concluir o login."
   },
   "adminLogin": {
     "title": "Login de Administrador",
@@ -477,7 +479,19 @@
     "cancel": "Cancelar",
     "deleting": "Excluindo...",
     "deleteConfirm": "Sim, Excluir Minha Conta",
-    "deleteFailed": "Falha ao excluir conta. Por favor, tente novamente."
+    "deleteFailed": "Falha ao excluir conta. Por favor, tente novamente.",
+    "loginHistory": "Histórico de login",
+    "noLoginHistory": "Nenhuma atividade de login registrada ainda.",
+    "historyTime": "Horário",
+    "historyBrowser": "Navegador",
+    "historyOs": "Sistema operacional",
+    "historyDevice": "Dispositivo",
+    "historyIp": "Endereço IP",
+    "historyStatus": "Status",
+    "historyStatusSuccess": "Sucesso",
+    "historyStatusBlocked": "Bloqueado",
+    "historyStatusPending": "Pendente",
+    "historyStatusFailed": "Falhou"
   },
   "resume": {
     "title": "Criador de Currículo",

@@ -1,6 +1,6 @@
 import { logout, selectuser } from "@/Feature/Userslice";
 import { clearAdmin } from "@/lib/auth";
-import { ExternalLink, FileText, Mail, Trash2, User, X } from "lucide-react";
+import { ExternalLink, FileText, History, Mail, Trash2, User, X } from "lucide-react";
 import { signOut } from "firebase/auth";
 import { auth } from "@/firebase/firebase";
 import Link from "next/link";
@@ -19,6 +19,17 @@ interface ProfileResume {
   paidAt: string | null;
 }
 
+interface LoginHistoryEntry {
+  _id: string;
+  browser: string;
+  os: string;
+  deviceType: string;
+  ip: string;
+  status: "success" | "blocked" | "pending" | "failed";
+  reason: string;
+  createdAt: string;
+}
+
 const index = () => {
   const { t } = useLanguage();
   const user = useSelector(selectuser);
@@ -29,6 +40,20 @@ const index = () => {
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [deleting, setDeleting] = useState(false);
   const [resumes, setResumes] = useState<ProfileResume[]>([]);
+  const [loginHistory, setLoginHistory] = useState<LoginHistoryEntry[]>([]);
+
+  const statusLabel = (status: string) => {
+    switch (status) {
+      case "success":
+        return t("profile.historyStatusSuccess");
+      case "blocked":
+        return t("profile.historyStatusBlocked");
+      case "pending":
+        return t("profile.historyStatusPending");
+      default:
+        return t("profile.historyStatusFailed");
+    }
+  };
 
   useEffect(() => {
     if (!user?.name) return;
@@ -64,6 +89,14 @@ const index = () => {
     api
       .get("/resume", { params: { email: user.email } })
       .then((res) => setResumes(res.data.resumes || []))
+      .catch(() => {});
+  }, [user?.email]);
+
+  useEffect(() => {
+    if (!user?.email) return;
+    api
+      .get("/auth/login-history", { headers: authHeaders(user) })
+      .then((res) => setLoginHistory(res.data.history || []))
       .catch(() => {});
   }, [user?.email]);
 
@@ -184,6 +217,62 @@ const index = () => {
                         )}
                       </div>
                     ))}
+                  </div>
+                )}
+              </div>
+
+              {/* Login History */}
+              <div className="bg-gray-50 rounded-xl p-5">
+                <div className="flex items-center gap-2 mb-3">
+                  <History className="h-5 w-5 text-green-600" />
+                  <h3 className="font-semibold text-gray-900">
+                    {t("profile.loginHistory")}
+                  </h3>
+                </div>
+                {loginHistory.length === 0 ? (
+                  <p className="text-gray-600 text-sm">{t("profile.noLoginHistory")}</p>
+                ) : (
+                  <div className="overflow-x-auto">
+                    <table className="w-full text-sm">
+                      <thead>
+                        <tr className="text-left text-gray-500 border-b border-gray-200">
+                          <th className="py-2 pr-3 font-medium">{t("profile.historyTime")}</th>
+                          <th className="py-2 pr-3 font-medium">{t("profile.historyBrowser")}</th>
+                          <th className="py-2 pr-3 font-medium">{t("profile.historyOs")}</th>
+                          <th className="py-2 pr-3 font-medium">{t("profile.historyDevice")}</th>
+                          <th className="py-2 pr-3 font-medium">{t("profile.historyIp")}</th>
+                          <th className="py-2 font-medium">{t("profile.historyStatus")}</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {loginHistory.map((h) => (
+                          <tr key={h._id} className="border-b border-gray-100">
+                            <td className="py-2 pr-3 whitespace-nowrap text-gray-700">
+                              {new Date(h.createdAt).toLocaleString()}
+                            </td>
+                            <td className="py-2 pr-3 capitalize text-gray-700">{h.browser}</td>
+                            <td className="py-2 pr-3 capitalize text-gray-700">{h.os}</td>
+                            <td className="py-2 pr-3 capitalize text-gray-700">{h.deviceType}</td>
+                            <td className="py-2 pr-3 text-gray-700">{h.ip}</td>
+                            <td className="py-2">
+                              <span
+                                className={`px-2 py-0.5 rounded-full text-xs font-medium ${
+                                  h.status === "success"
+                                    ? "bg-green-100 text-green-700"
+                                    : h.status === "blocked"
+                                    ? "bg-red-100 text-red-700"
+                                    : h.status === "pending"
+                                    ? "bg-amber-100 text-amber-700"
+                                    : "bg-gray-200 text-gray-700"
+                                }`}
+                              >
+                                {statusLabel(h.status)}
+                              </span>
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
                   </div>
                 )}
               </div>

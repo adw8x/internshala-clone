@@ -134,7 +134,9 @@
     "loggedIn": "登录成功",
     "invalidAdminCredentials": "管理员凭据无效",
     "adminAccountCreated": "管理员账户已创建。您现在可以登录了。",
-    "createAdminFailed": "创建管理员账户失败"
+    "createAdminFailed": "创建管理员账户失败",
+    "otpTitle": "验证您的登录",
+    "otpDescription": "为了您的安全，我们已向您的邮箱发送一次性验证码。请在下方输入以完成登录。"
   },
   "adminLogin": {
     "title": "管理员登录",
@@ -477,7 +479,19 @@
     "cancel": "取消",
     "deleting": "删除中...",
     "deleteConfirm": "是的，删除我的账户",
-    "deleteFailed": "删除账户失败，请重试。"
+    "deleteFailed": "删除账户失败，请重试。",
+    "loginHistory": "登录历史",
+    "noLoginHistory": "暂无登录记录。",
+    "historyTime": "时间",
+    "historyBrowser": "浏览器",
+    "historyOs": "操作系统",
+    "historyDevice": "设备",
+    "historyIp": "IP 地址",
+    "historyStatus": "状态",
+    "historyStatusSuccess": "成功",
+    "historyStatusBlocked": "已阻止",
+    "historyStatusPending": "待处理",
+    "historyStatusFailed": "失败"
   },
   "resume": {
     "title": "简历生成器",

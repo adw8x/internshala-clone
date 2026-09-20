@@ -134,7 +134,9 @@
     "loggedIn": "सफलतापूर्वक लॉग इन किया गया",
     "invalidAdminCredentials": "अमान्य एडमिन साख",
     "adminAccountCreated": "एडमिन खाता बन गया। अब आप साइन इन कर सकते हैं।",
-    "createAdminFailed": "एडमिन खाता बनाने में विफल"
+    "createAdminFailed": "एडमिन खाता बनाने में विफल",
+    "otpTitle": "अपने लॉगिन को सत्यापित करें",
+    "otpDescription": "आपकी सुरक्षा के लिए, हमने आपके ईमेल पर एक बार का कोड भेजा है। लॉगिन पूरा करने के लिए इसे नीचे दर्ज करें।"
   },
   "adminLogin": {
     "title": "एडमिन लॉगिन",
@@ -477,7 +479,19 @@
     "cancel": "रद्द करें",
     "deleting": "हटाया जा रहा है...",
     "deleteConfirm": "हाँ, मेरा खाता हटाएं",
-    "deleteFailed": "खाता हटाने में विफल। कृपया पुनः प्रयास करें।"
+    "deleteFailed": "खाता हटाने में विफल। कृपया पुनः प्रयास करें।",
+    "loginHistory": "लॉगिन इतिहास",
+    "noLoginHistory": "अभी तक कोई लॉगिन गतिविधि दर्ज नहीं हुई है।",
+    "historyTime": "समय",
+    "historyBrowser": "ब्राउज़र",
+    "historyOs": "ऑपरेटिंग सिस्टम",
+    "historyDevice": "डिवाइस",
+    "historyIp": "आईपी पता",
+    "historyStatus": "स्थिति",
+    "historyStatusSuccess": "सफल",
+    "historyStatusBlocked": "अवरुद्ध",
+    "historyStatusPending": "लंबित",
+    "historyStatusFailed": "विफल"
   },
   "resume": {
     "title": "रिज़्यूमे बिल्डर",

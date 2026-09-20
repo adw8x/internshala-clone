@@ -134,7 +134,9 @@
     "loggedIn": "Sesión iniciada correctamente",
     "invalidAdminCredentials": "Credenciales de admin inválidas",
     "adminAccountCreated": "Cuenta de admin creada. Ahora puedes iniciar sesión.",
-    "createAdminFailed": "Error al crear cuenta de admin"
+    "createAdminFailed": "Error al crear cuenta de admin",
+    "otpTitle": "Verifica tu inicio de sesión",
+    "otpDescription": "Por tu seguridad, enviamos un código de un solo uso a tu correo. Introdúcelo a continuación para completar el inicio de sesión."
   },
   "adminLogin": {
     "title": "Inicio de sesión de admin",
@@ -477,7 +479,19 @@
     "cancel": "Cancelar",
     "deleting": "Eliminando...",
     "deleteConfirm": "Sí, eliminar mi cuenta",
-    "deleteFailed": "Error al eliminar la cuenta. Por favor intenta de nuevo."
+    "deleteFailed": "Error al eliminar la cuenta. Por favor intenta de nuevo.",
+    "loginHistory": "Historial de inicio de sesión",
+    "noLoginHistory": "Aún no hay actividad de inicio de sesión registrada.",
+    "historyTime": "Hora",
+    "historyBrowser": "Navegador",
+    "historyOs": "Sistema operativo",
+    "historyDevice": "Dispositivo",
+    "historyIp": "Dirección IP",
+    "historyStatus": "Estado",
+    "historyStatusSuccess": "Correcto",
+    "historyStatusBlocked": "Bloqueado",
+    "historyStatusPending": "Pendiente",
+    "historyStatusFailed": "Fallido"
   },
   "resume": {
     "title": "Constructor de currículum",
