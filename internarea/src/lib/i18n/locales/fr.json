@@ -134,7 +134,9 @@
     "loggedIn": "Connecté avec succès",
     "invalidAdminCredentials": "Identifiants admin invalides",
     "adminAccountCreated": "Compte admin créé. Vous pouvez maintenant vous connecter.",
-    "createAdminFailed": "Échec de la création du compte admin"
+    "createAdminFailed": "Échec de la création du compte admin",
+    "otpTitle": "Vérifiez votre connexion",
+    "otpDescription": "Pour votre sécurité, nous avons envoyé un code à usage unique à votre e-mail. Saisissez-le ci-dessous pour terminer la connexion."
   },
   "adminLogin": {
     "title": "Connexion admin",
@@ -477,7 +479,19 @@
     "cancel": "Annuler",
     "deleting": "Suppression en cours...",
     "deleteConfirm": "Oui, supprimer mon compte",
-    "deleteFailed": "Échec de la suppression du compte. Veuillez réessayer."
+    "deleteFailed": "Échec de la suppression du compte. Veuillez réessayer.",
+    "loginHistory": "Historique de connexion",
+    "noLoginHistory": "Aucune activité de connexion enregistrée pour le moment.",
+    "historyTime": "Heure",
+    "historyBrowser": "Navigateur",
+    "historyOs": "Système d'exploitation",
+    "historyDevice": "Appareil",
+    "historyIp": "Adresse IP",
+    "historyStatus": "Statut",
+    "historyStatusSuccess": "Succès",
+    "historyStatusBlocked": "Bloqué",
+    "historyStatusPending": "En attente",
+    "historyStatusFailed": "Échec"
   },
   "resume": {
     "title": "Créateur de CV",
